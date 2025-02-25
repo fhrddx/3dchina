@@ -26,6 +26,7 @@ export default class GeoWorld {
       const basic = new Basic(option.dom);
       this.scene = basic.scene;
       this.camera = basic.camera;
+      this.camera.position.set(50, -100, 500);
       this.renderer = basic.renderer;
       this.controls = basic.controls;
       //注解：加上辅助线，试一下（红色X轴，绿色Y轴，蓝色Z轴）
@@ -46,5 +47,17 @@ export default class GeoWorld {
     createMap(){
       const map = new GeoMap();
       map.create();
+      this.scene.add(map.group);
+      this.render();
+      //注解：隐藏loading
+      const loading = document.querySelector('#loading')
+      loading.classList.add('out')
+    }
+
+    //注解：渲染函数
+    render() {
+      requestAnimationFrame(this.render.bind(this))
+      this.renderer.render(this.scene, this.camera);
+      this.controls && this.controls.update();
     }
 }
