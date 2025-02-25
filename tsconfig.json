@@ -9,6 +9,8 @@
       "declaration": true,
       "declarationDir": "build/types",
       "baseUrl": ".",
-      "noImplicitAny": false
+      "noImplicitAny": false,
+      "resolveJsonModule": true,
+      "esModuleInterop": true,
   }
 }
