@@ -37,7 +37,7 @@ export default class GeoMap {
               shape.moveTo(x, -y)
             }
             shape.lineTo(x, -y)
-            vertices.push(x, -y, 5);
+            vertices.push(x, -y, 10);
           }
         }
         //生成线条
