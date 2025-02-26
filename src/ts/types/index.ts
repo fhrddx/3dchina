@@ -63,7 +63,8 @@ type mapOptions = {
   activePlaneColor : number,
   activeSideColor: number,
   activeLineColor: number,
-  deep: number
+  deep: number,
+  sideTexture: Texture,
 }
 
 export default punctuation;

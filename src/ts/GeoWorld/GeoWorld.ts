@@ -1,10 +1,11 @@
-import { AxesHelper, CameraHelper, Intersection, Object3D, PerspectiveCamera, Raycaster, Scene, Vector2, WebGLRenderer } from "three";
+import { AxesHelper, CameraHelper, Intersection, Object3D, PerspectiveCamera, Raycaster, RepeatWrapping, Scene, Vector2, WebGLRenderer } from "three";
 import { IGeoWorld } from "../interfaces/IGeoWorld";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Sizes from "../Utils/Sizes";
 import { Basic } from "../world/Basic";
 import GeoMap from "./GeoMap";
 import { mapOptions } from "../types";
+import { Resources } from "../world/Resources";
 
 export default class GeoWorld {
     //注解：option 是外部传进来的，有一个属性dom，并保存起来
@@ -24,6 +25,8 @@ export default class GeoWorld {
     private tooltip: any;
     //注解：保留射线拾取的物体
     private currentHoverMesh: Intersection;
+    //注解：资源加载器
+    private resources: Resources;
     
     constructor(option: IGeoWorld) {
       //注解：option 是外部传进来的，有一个属性dom，并保存起来
@@ -35,16 +38,6 @@ export default class GeoWorld {
       this.camera.position.set(0, -240, 500);
       this.renderer = basic.renderer;
       this.controls = basic.controls;
-      //注解：添加地图的样式
-      this.mapStyle = {
-        planeColor: 0x2d9bd8,
-        sideColor: 0x0d6c9a,
-        lineColor: 0x8cb9d3,
-        activePlaneColor: 0x94c8e3,
-        activeSideColor: 0x094869,
-        activeLineColor: 0xbfe5f4,
-        deep: 8
-      }
       //注解：加上辅助线，试一下（红色X轴，绿色Y轴，蓝色Z轴）
       const axesHelper = new AxesHelper(200);
       this.scene.add(axesHelper);
@@ -57,7 +50,27 @@ export default class GeoWorld {
         this.camera.aspect = Number(this.sizes.viewport.width) / Number(this.sizes.viewport.height);
         this.camera.updateProjectionMatrix();
       })
-      this.createMap();
+      //注解：加载完图片，创建地球，然后每一帧更新一下
+      this.resources = new Resources(async () => {
+        //设置一下侧边贴图
+        const sideTexture = this.resources.textures.side;
+        sideTexture.wrapS = RepeatWrapping;
+        sideTexture.wrapT = RepeatWrapping;
+        sideTexture.repeat.set(1, 1.5);
+        //注解：添加地图的样式
+        this.mapStyle = {
+          planeColor: 0x2d9bd8,
+          sideColor: 0x0d6c9a,
+          lineColor: 0x8cb9d3,
+          activePlaneColor: 0x94c8e3,
+          activeSideColor: 0x094869,
+          activeLineColor: 0xbfe5f4,
+          deep: 8,
+          sideTexture: sideTexture
+        }
+        this.resources.textures.side;
+        this.createMap();
+      })
     }
 
     createMap(){
