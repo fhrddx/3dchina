@@ -37,6 +37,7 @@
     height: 100%;
     width: 100%;
     background: #010826;
+    cursor: pointer;
   }
   #html2canvas {
     position: absolute;
@@ -216,6 +217,16 @@
       transform: scale(1);
     }
   }
+
+  #tooltip {
+    position: absolute;
+    z-index: 2;
+    background: white;
+    padding: 10px;
+    border-radius: 2px;
+    visibility: hidden;
+    cursor: pointer;
+  }
 </style>
 
 <body>
@@ -234,6 +245,6 @@
     <div class="fire-div"></div>
   </div>
   <div id="earth-canvas"></div>
+  <div id="tooltip"></div>
 </body>
-
 </html>

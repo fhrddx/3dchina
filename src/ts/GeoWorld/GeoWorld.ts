@@ -21,6 +21,7 @@ export default class GeoWorld {
     //注解：相关的点击事件
     private raycaster: Raycaster;
     private mouse: Vector2;
+    private tooltip: any;
     //注解：保留射线拾取的物体
     private currentHoverMesh: Intersection;
     
@@ -78,12 +79,16 @@ export default class GeoWorld {
       //注解：初始化射线
       this.raycaster  = new Raycaster();
       this.mouse = new Vector2();
+      this.tooltip = document.getElementById('tooltip');
       //注解：鼠标移动记录位置
       this.renderer.domElement.addEventListener('mousemove', e => {
         const x = e.clientX / window.innerWidth * 2 - 1;
         const y = -(e.clientY / window.innerHeight) * 2 + 1;
         this.mouse.x = x;
         this.mouse.y = y;
+        // 更改div位置
+        this.tooltip.style.left = e.clientX + 20 + 'px'
+        this.tooltip.style.top = e.clientY + 5 + 'px'
       })
     }
 
@@ -137,6 +142,8 @@ export default class GeoWorld {
     }
     //重新赋值当前hover对象
     this.currentHoverMesh = province;
+    //显示浮层
+    this.showTip();
     //@ts-ignore
     province.object.material[0].color.set(this.mapStyle.activePlaneColor);
   }
@@ -149,5 +156,23 @@ export default class GeoWorld {
     //@ts-ignore
     this.currentHoverMesh.object.material[0].color.set(this.mapStyle.planeColor);
     this.currentHoverMesh = null;
+    this.tooltip.style.visibility = 'hidden';
+  }
+
+  //显示浮层
+  showTip(){
+    if(!this.currentHoverMesh){
+      return;
+    }
+    const parent = this.currentHoverMesh.object.parent;
+    if(!parent){
+      return;
+    }
+    const parentInfo = parent.userData['properties'];
+    if(!parentInfo){
+      return;
+    }
+    this.tooltip.textContent = parentInfo.name;
+    this.tooltip.style.visibility = 'visible';
   }
 }
