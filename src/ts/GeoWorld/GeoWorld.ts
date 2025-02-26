@@ -35,12 +35,12 @@ export default class GeoWorld {
       //注解：添加地图的样式
       this.mapStyle = {
         planeColor: 0x2d9bd8,
-        sideColor: 0x094869,
-        lineColor: 0xbfe5f4,
+        sideColor: 0x0d6c9a,
+        lineColor: 0x8cb9d3,
         activePlaneColor: 0x94c8e3,
         activeSideColor: 0x094869,
         activeLineColor: 0xbfe5f4,
-        deep: 10
+        deep: 8
       }
       //注解：加上辅助线，试一下（红色X轴，绿色Y轴，蓝色Z轴）
       const axesHelper = new AxesHelper(200);

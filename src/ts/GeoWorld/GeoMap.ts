@@ -68,13 +68,13 @@ export default class GeoMap {
           opacity: 0.6,
         })
         material.needsUpdate = true;
-        const material1 = new MeshBasicMaterial({
+        const sideMaterial = new MeshBasicMaterial({
           color: new Color(this.mapStyle.sideColor),
           transparent: true,
           opacity: 0.5,
         })
-        material1.needsUpdate = true;
-        const mesh = new Mesh(geometry, [material, material1]);
+        sideMaterial.needsUpdate = true;
+        const mesh = new Mesh(geometry, [material, sideMaterial]);
         mesh.name = 'province_mesh'
         //最后加入各个组合中
         provinceGroup.add(line);
