@@ -1,4 +1,4 @@
-import { AxesHelper, CameraHelper, PerspectiveCamera, Raycaster, Scene, Vector2, WebGLRenderer } from "three";
+import { AxesHelper, CameraHelper, Intersection, Object3D, PerspectiveCamera, Raycaster, Scene, Vector2, WebGLRenderer } from "three";
 import { IGeoWorld } from "../interfaces/IGeoWorld";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Sizes from "../Utils/Sizes";
@@ -21,6 +21,8 @@ export default class GeoWorld {
     //注解：相关的点击事件
     private raycaster: Raycaster;
     private mouse: Vector2;
+    //注解：保留射线拾取的物体
+    private currentHoverMesh: Intersection;
     
     constructor(option: IGeoWorld) {
       //注解：option 是外部传进来的，有一个属性dom，并保存起来
@@ -93,34 +95,46 @@ export default class GeoWorld {
       this.raycasterEvent();
     }
 
-    //注解：处理一下相关事件 
+    //处理一下相关事件 
     raycasterEvent(){
-      if(!(this.mouse.x === 0 && this.mouse.y === 0)){
-        this.raycaster.setFromCamera(this.mouse, this.camera)
-        //算出射线 与当场景相交的对象有那些
-        const intersects = this.raycaster.intersectObjects(
-          this.scene.children,
-          true
-        )
-        if(intersects && intersects.length > 0){
-          const province = intersects.find(i => i.object.name === 'province_mesh');
-          console.log(province)
-          if(province){
-            const parent = province.object.parent;
-            const parentInfo = parent.userData['properties'];
-            const line = parent.children.find(i => i.name === 'province_line');
-            //console.log('----------begin');
-            //console.log('parentInfo:')
-            //console.log(parentInfo);
-            //console.log('lineInfo:');
-            //console.log(line)
-            //console.log('----------end')
-            // @ts-ignore
-            province.object.material[0].color.set(this.mapStyle.activePlaneColor)
-            //province.object.material[0].color.set(0xff0000)
-           // this.lastPick.object.material[1].color.set(0xff0000)
-          }
-        }
-      }   
+      //通常这种情况，是因为页面初始化，光标的位移还没有被监控到，直接不处理
+      if(this.mouse.x === 0 && this.mouse.y === 0){
+        return;
+      }
+      //每一帧都发一次射线，并获取射线拾取到的物体
+      this.raycaster.setFromCamera(this.mouse, this.camera);
+      const intersects = this.raycaster.intersectObjects(
+        //注意，这里的 scene.children 范围太广，可以适当的减少下范围
+        this.scene.children,
+        true
+      );
+      //没有拾取到任何物体，直接返回
+      const intersectsHasData = intersects && intersects.length > 0;
+      if(!intersectsHasData){
+        return;
+      }
+      //筛选出拾取到的第一个物体
+      const province = intersects.find(i => i.object.name === 'province_mesh');
+      if(!province){
+        return;
+      }
+      //处理一下hover事件
+      this.handleHover(province);
+  }
+
+  //处理下hover事件
+  handleHover(province: Intersection){
+    //与上一次hover的物品一样，则无需任何操作
+    if(province === this.currentHoverMesh){
+      return;
+    }else if(this.currentHoverMesh){
+      //处理上一次hover的物体，恢复其颜色
+      //@ts-ignore
+      this.currentHoverMesh.object.material[0].color.set(this.mapStyle.planeColor);
     }
+    //重新赋值当前hover对象
+    this.currentHoverMesh = province;
+    //@ts-ignore
+    province.object.material[0].color.set(this.mapStyle.activePlaneColor);
+  }
 }
