@@ -111,6 +111,9 @@ export default class GeoWorld {
       //没有拾取到任何物体，直接返回
       const intersectsHasData = intersects && intersects.length > 0;
       if(!intersectsHasData){
+        this.mouse.x = 0;
+        this.mouse.y = 0;
+        this.removeHover();
         return;
       }
       //筛选出拾取到的第一个物体
@@ -120,7 +123,7 @@ export default class GeoWorld {
       }
       //处理一下hover事件
       this.handleHover(province);
-  }
+    }
 
   //处理下hover事件
   handleHover(province: Intersection){
@@ -136,5 +139,15 @@ export default class GeoWorld {
     this.currentHoverMesh = province;
     //@ts-ignore
     province.object.material[0].color.set(this.mapStyle.activePlaneColor);
+  }
+
+  //去除所有的hover事件
+  removeHover(){
+    if(!this.currentHoverMesh){
+      return;
+    }
+    //@ts-ignore
+    this.currentHoverMesh.object.material[0].color.set(this.mapStyle.planeColor);
+    this.currentHoverMesh = null;
   }
 }
