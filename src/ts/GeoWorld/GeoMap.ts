@@ -32,7 +32,7 @@ export default class GeoMap {
         //每个圈的所有的点，都遍历一次，每个点都是包含2个数字的数组
         for (let i = 0; i < oneCircle.length; i++) {
           const [x, y] = projection(oneCircle[i]);
-          //这里存在着一个很严重的问题，那就是geojson数据可能本身有问题，导致投影了之后，出现 NAN 的值，需要具体查下是什么原因-----------？？？
+          //这里存在着一个很严重的问题，那就是geojson数据可能本身有问题，导致投影了之后，出现 NAN 的值，需要具体查下是什么原因-----------？？？？
           if(!isNaN(x) && !isNaN(y)){
             if (i === 0) {
               shape.moveTo(x, -y)
