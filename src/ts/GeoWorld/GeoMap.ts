@@ -1,4 +1,4 @@
-import { BufferAttribute, BufferGeometry, Color, ExtrudeGeometry, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Shape, Vector3 } from 'three';
+import { BackSide, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, FrontSide, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, MeshStandardMaterial, Shape, Vector3 } from 'three';
 import ChinaGeoJson from '../../json/ChinaGeoJson.json';
 import * as d3 from'd3-geo'; 
 import { mapOptions } from '../types';
@@ -65,14 +65,38 @@ export default class GeoMap {
         const material = new MeshBasicMaterial({
           color: new Color(this.mapStyle.planeColor),
           transparent: true,
-          opacity: 0.6,
+          opacity: 0.9,
         })
         material.needsUpdate = true;
+
+
+
+
+
+        /*
         const sideMaterial = new MeshBasicMaterial({
           color: new Color(this.mapStyle.sideColor),
           transparent: true,
           opacity: 0.5,
         })
+        */
+
+
+
+        const sideMaterial = new MeshBasicMaterial({
+          color: 0xa3ffc3,
+          map: this.mapStyle.sideTexture,
+          fog: false,
+          opacity: 0,
+          side: FrontSide,
+        })
+
+
+
+
+
+
+
         sideMaterial.needsUpdate = true;
         const mesh = new Mesh(geometry, [material, sideMaterial]);
         mesh.name = 'province_mesh'

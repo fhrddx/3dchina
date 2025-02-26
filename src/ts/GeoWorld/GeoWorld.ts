@@ -35,7 +35,7 @@ export default class GeoWorld {
       const basic = new Basic(option.dom);
       this.scene = basic.scene;
       this.camera = basic.camera;
-      this.camera.position.set(0, -240, 500);
+      this.camera.position.set(0, -120, 250);
       this.renderer = basic.renderer;
       this.controls = basic.controls;
       //注解：加上辅助线，试一下（红色X轴，绿色Y轴，蓝色Z轴）
@@ -56,12 +56,13 @@ export default class GeoWorld {
         const sideTexture = this.resources.textures.side;
         sideTexture.wrapS = RepeatWrapping;
         sideTexture.wrapT = RepeatWrapping;
-        sideTexture.repeat.set(1, 1.5);
+        sideTexture.repeat.set(0.1, 0.13);
+        sideTexture.offset.y += 1.88
         //注解：添加地图的样式
         this.mapStyle = {
-          planeColor: 0x2d9bd8,
+          planeColor: 0x1b4c4c,
           sideColor: 0x0d6c9a,
-          lineColor: 0x8cb9d3,
+          lineColor: 0xe3e4e4,
           activePlaneColor: 0x94c8e3,
           activeSideColor: 0x094869,
           activeLineColor: 0xbfe5f4,
