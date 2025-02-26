@@ -56,5 +56,15 @@ type uniforms = {
   map: { value: Texture }
 }
 
+type mapOptions = {
+  planeColor: number,
+  sideColor: number,
+  lineColor: number,
+  activePlaneColor : number,
+  activeSideColor: number,
+  activeLineColor: number,
+  deep: number
+}
+
 export default punctuation;
-export { earthOptions,  uniforms};
+export { earthOptions,  uniforms, mapOptions };

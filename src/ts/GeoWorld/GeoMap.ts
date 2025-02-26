@@ -1,13 +1,16 @@
-import { BufferAttribute, BufferGeometry, ExtrudeGeometry, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Shape, Vector3 } from 'three';
+import { BufferAttribute, BufferGeometry, Color, ExtrudeGeometry, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Shape, Vector3 } from 'three';
 import ChinaGeoJson from '../../json/ChinaGeoJson.json';
 import * as d3 from'd3-geo'; 
+import { mapOptions } from '../types';
 
 export default class GeoMap {
   public group: Group;
+  private mapStyle: mapOptions
 
-  constructor(){
+  constructor(mapStyleOption: mapOptions){
+    this.mapStyle = mapStyleOption;
     this.group = new Group();
-    this.group.name = 'map';
+    this.group.name = 'map_group';
   }
 
   create(){
@@ -21,6 +24,7 @@ export default class GeoMap {
     ChinaGeoJson.features.forEach(provinceObject => {
       //每个省创建一个组合
       const provinceGroup = new Group();
+      provinceGroup.name = 'province_group';
       //所有的圈
       const allCircles = provinceObject.geometry.coordinates;
       //再遍历每一个圈
@@ -38,19 +42,20 @@ export default class GeoMap {
               shape.moveTo(x, -y)
             }
             shape.lineTo(x, -y)
-            vertices.push(x, -y, 10);
+            vertices.push(x, -y, this.mapStyle.deep);
           }
         }
         //生成线条
         const lineGeometry = new BufferGeometry();
         lineGeometry.setAttribute("position", new BufferAttribute(new Float32Array(vertices), 3));
         const lineMaterial = new LineBasicMaterial({
-          color: 'white',
+          color: new Color(this.mapStyle.lineColor),
         })
         const line = new Line(lineGeometry, lineMaterial);
+        line.name = 'province_line'
         //由shape平面挤压出一定的厚度物体
         const extrudeSettings = {
-          depth: 10,
+          depth: this.mapStyle.deep,
           bevelEnabled: false,
         };
         const geometry = new ExtrudeGeometry(
@@ -58,21 +63,23 @@ export default class GeoMap {
           extrudeSettings
         )
         const material = new MeshBasicMaterial({
-          color: '#2defff',
+          color: new Color(this.mapStyle.planeColor),
           transparent: true,
           opacity: 0.6,
         })
+        material.needsUpdate = true;
         const material1 = new MeshBasicMaterial({
-          color: '#3480C4',
+          color: new Color(this.mapStyle.sideColor),
           transparent: true,
           opacity: 0.5,
         })
+        material1.needsUpdate = true;
         const mesh = new Mesh(geometry, [material, material1]);
-        //给mesh自定义属性，方便后面点击的时候用到
-        mesh.userData['properties'] = provinceObject.properties;
+        mesh.name = 'province_mesh'
         //最后加入各个组合中
         provinceGroup.add(line);
         provinceGroup.add(mesh);
+        provinceGroup.userData['properties'] = provinceObject.properties;
         this.group.add(provinceGroup);
       });
     });
