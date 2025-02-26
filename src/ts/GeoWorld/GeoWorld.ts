@@ -29,7 +29,7 @@ export default class GeoWorld {
       const basic = new Basic(option.dom);
       this.scene = basic.scene;
       this.camera = basic.camera;
-      this.camera.position.set(50, -100, 500);
+      this.camera.position.set(0, -240, 500);
       this.renderer = basic.renderer;
       this.controls = basic.controls;
       //注解：添加地图的样式
@@ -40,7 +40,7 @@ export default class GeoWorld {
         activePlaneColor: 0x94c8e3,
         activeSideColor: 0x094869,
         activeLineColor: 0xbfe5f4,
-        deep: 8
+        deep: 10
       }
       //注解：加上辅助线，试一下（红色X轴，绿色Y轴，蓝色Z轴）
       const axesHelper = new AxesHelper(200);
