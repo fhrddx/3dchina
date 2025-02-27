@@ -86,10 +86,20 @@ export default class GeoMap {
       });
     });
     //创建光柱
-    this.createBar();
+    this.createBar([110.109828, 25.047893]);
+
+    this.createBar([120.109828, 29.047893]);
+
+
+    this.createBar([104.109828, 28.047893]);
+
+
+    //this.createBar([110.109828, 25.047893]);
+
+
   }
 
-  createBar(){
+  createBar(array: number[]){
     const factor = 0.7
     const height = 25.0 * factor
     const geoHeight = height;
@@ -106,7 +116,7 @@ export default class GeoMap {
     const mesh = new Mesh(geo, material);
     const areaBar = mesh;
     const projection = d3.geoMercator().center([104.0, 37.5]).translate([0, 0]);
-    const [x, y] = projection([110.109828, 25.047893])
+    const [x, y] = projection(array)
     areaBar.position.set(x, -y, this.mapStyle.deep + 0.3)
     const hg = this.createHUIGUANG(geoHeight, 0xfffef4)
     areaBar.add(...hg);
@@ -117,7 +127,6 @@ export default class GeoMap {
     const label = this.createLabel();
     label.scale.set(0.1, 0.1, 0.1);
     label.rotation.x = Math.PI/2;
-
     label.position.set(x, -y, this.mapStyle.deep + 0.3 + geoHeight);
     this.group.add(label)
   }
@@ -177,31 +186,13 @@ export default class GeoMap {
     })
     const mesh1 = new Mesh(geometry, material1)
     const mesh2 = new Mesh(geometry, material2)
-    //mesh1.renderOrder = 6
-    //mesh2.renderOrder = 6
-    //mesh1.rotateX(-Math.PI / 2)
-    //mesh2.rotateX(-Math.PI / 2)
     mesh1.position.copy(position)
     mesh2.position.copy(position)
     mesh2.position.y -= 0.001
-    //mesh1.scale.set(0, 0, 0)
-    //mesh2.scale.set(0, 0, 0)
-
     const quanGroup = new Group();
     quanGroup.add(mesh1, mesh2);
     this.group.add(quanGroup);
-
     return quanGroup;
-    /*
-    this.quanGroup = new Group()
-    this.quanGroup.add(mesh1, mesh2)
-    this.scene.add(this.quanGroup)
-    this.time.on("tick", () => {
-      mesh1.rotation.z += 0.05
-    })
-    return this.quanGroup
-
-    */
   }
 
   createLabel(){
