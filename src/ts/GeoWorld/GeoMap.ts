@@ -3,6 +3,7 @@ import ChinaGeoJson from '../../json/ChinaGeoJson.json';
 import * as d3 from'd3-geo'; 
 import { mapOptions } from '../types';
 import { GradientShader } from './GradientShader';
+import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
 
 export default class GeoMap {
   public group: Group;
@@ -100,15 +101,6 @@ export default class GeoMap {
       fog: false,
     })
   
-    /*
-    new GradientShader(material, {
-      uColor1: 0xfbdf88,
-      uColor2: 0xffffff,
-      size: geoHeight,
-      dir: "y",
-    })
-      */
-      
     const geo = new BoxGeometry(1, 1, geoHeight)
     geo.translate(0, 0, geoHeight / 2)
     const mesh = new Mesh(geo, material);
@@ -116,12 +108,18 @@ export default class GeoMap {
     const projection = d3.geoMercator().center([104.0, 37.5]).translate([0, 0]);
     const [x, y] = projection([110.109828, 25.047893])
     areaBar.position.set(x, -y, this.mapStyle.deep + 0.3)
-    //areaBar.scale.set(1, 1, 0);
     const hg = this.createHUIGUANG(geoHeight, 0xfffef4)
-    areaBar.add(...hg)
-    this.group.add(areaBar)
+    areaBar.add(...hg);
+    this.group.add(areaBar);
     
-    this.createQuan(new Vector3(x, -y, this.mapStyle.deep + 0.4))
+    this.createQuan(new Vector3(x, -y, this.mapStyle.deep + 0.4));
+
+    const label = this.createLabel();
+    label.scale.set(0.1, 0.1, 0.1);
+    label.rotation.x = Math.PI/2;
+
+    label.position.set(x, -y, this.mapStyle.deep + 0.3 + geoHeight);
+    this.group.add(label)
   }
 
   createHUIGUANG(h, color) {
@@ -204,5 +202,26 @@ export default class GeoMap {
     return this.quanGroup
 
     */
+  }
+
+  createLabel(){
+    const content = `
+     <div class="provinces-label">
+          <div class="provinces-label-wrap">
+            <div class="number"><span class="value">200</span><span class="unit">万人</span></div>
+            <div class="name">
+              <span class="zh">中国</span>
+              <span class="en">CHINA</span>
+            </div>
+            <div class="no">4</div>
+          </div>
+        </div>
+    `
+    let tag = document.createElement("div")
+    tag.innerHTML = content
+    tag.className = 'provinces-label';
+    tag.style.position = "absolute";
+    const label = new CSS3DObject(tag);
+    return label;
   }
 }
