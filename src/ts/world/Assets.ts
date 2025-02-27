@@ -25,7 +25,9 @@ const fileSuffix = [
   'flow',
   'weixincircle',
   'side',
-  'huiguang'
+  'huiguang',
+  'guangquan01',
+  'guangquan02',
 ]
 
 const textures = fileSuffix.map(item => {

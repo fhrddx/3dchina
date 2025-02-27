@@ -68,7 +68,9 @@ export default class GeoWorld {
           activeLineColor: 0xbfe5f4,
           deep: 8,
           sideTexture: sideTexture,
-          huiguangTexture: this.resources.textures.huiguang
+          huiguangTexture: this.resources.textures.huiguang,
+          guangquan01: this.resources.textures.guangquan01,
+          guangquan02: this.resources.textures.guangquan02,
         }
         this.resources.textures.side;
         this.createMap();

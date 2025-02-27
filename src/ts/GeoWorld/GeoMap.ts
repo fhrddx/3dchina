@@ -92,7 +92,7 @@ export default class GeoMap {
     const factor = 0.7
     const height = 25.0 * factor
     const geoHeight = height;
-    let material = new MeshBasicMaterial({
+    const material = new MeshBasicMaterial({
       color: 0x77fbf5,
       transparent: true,
       opacity: 0.7,
@@ -100,35 +100,39 @@ export default class GeoMap {
       fog: false,
     })
   
+    /*
     new GradientShader(material, {
       uColor1: 0xfbdf88,
       uColor2: 0xffffff,
       size: geoHeight,
       dir: "y",
     })
+      */
       
     const geo = new BoxGeometry(1, 1, geoHeight)
     geo.translate(0, 0, geoHeight / 2)
     const mesh = new Mesh(geo, material);
-    let areaBar = mesh;
+    const areaBar = mesh;
     const projection = d3.geoMercator().center([104.0, 37.5]).translate([0, 0]);
-    let [x, y] = projection([110.109828, 25.047893])
+    const [x, y] = projection([110.109828, 25.047893])
     areaBar.position.set(x, -y, this.mapStyle.deep + 0.3)
     //areaBar.scale.set(1, 1, 0);
-    let hg = this.createHUIGUANG(geoHeight, 0xfffef4)
+    const hg = this.createHUIGUANG(geoHeight, 0xfffef4)
     areaBar.add(...hg)
     this.group.add(areaBar)
+    
+    this.createQuan(new Vector3(x, -y, this.mapStyle.deep + 0.4))
   }
 
   createHUIGUANG(h, color) {
-    let geometry = new PlaneGeometry(6, h)
+    const geometry = new PlaneGeometry(6, h)
     geometry.translate(0, h / 2, 0)
-    const texture = this.mapStyle.huiguangTexture
+    const texture = this.mapStyle.huiguangTexture;
     //texture.colorSpace = "srgb"
     texture.encoding = sRGBEncoding;
     texture.wrapS = RepeatWrapping
     texture.wrapT = RepeatWrapping
-    let material = new MeshBasicMaterial({
+    const material = new MeshBasicMaterial({
       color: color,
       map: texture,
       transparent: true,
@@ -137,13 +141,68 @@ export default class GeoMap {
       side: DoubleSide,
       blending: AdditiveBlending,
     })
-    let mesh = new Mesh(geometry, material)
+    const mesh = new Mesh(geometry, material)
     mesh.renderOrder = 10
     mesh.rotateX(Math.PI / 2)
-    let mesh2 = mesh.clone()
-    let mesh3 = mesh.clone()
+    const mesh2 = mesh.clone()
+    const mesh3 = mesh.clone()
     mesh2.rotateY((Math.PI / 180) * 60)
     mesh3.rotateY((Math.PI / 180) * 120)
     return [mesh, mesh2, mesh3]
+  }
+
+  createQuan(position) {
+    const guangquan1 = this.mapStyle.guangquan01
+    const guangquan2 = this.mapStyle.guangquan02
+    const geometry = new PlaneGeometry(5, 5)
+    const material1 = new MeshBasicMaterial({
+      color: 0xffffff,
+      map: guangquan1,
+      alphaMap: guangquan1,
+      opacity: 1,
+      transparent: true,
+      depthTest: false,
+      fog: false,
+      blending: AdditiveBlending,
+      side: DoubleSide
+    })
+    const material2 = new MeshBasicMaterial({
+      color: 0xffffff,
+      map: guangquan2,
+      alphaMap: guangquan2,
+      opacity: 1,
+      transparent: true,
+      depthTest: false,
+      fog: false,
+      blending: AdditiveBlending,
+      side: DoubleSide
+    })
+    const mesh1 = new Mesh(geometry, material1)
+    const mesh2 = new Mesh(geometry, material2)
+    //mesh1.renderOrder = 6
+    //mesh2.renderOrder = 6
+    //mesh1.rotateX(-Math.PI / 2)
+    //mesh2.rotateX(-Math.PI / 2)
+    mesh1.position.copy(position)
+    mesh2.position.copy(position)
+    mesh2.position.y -= 0.001
+    //mesh1.scale.set(0, 0, 0)
+    //mesh2.scale.set(0, 0, 0)
+
+    const quanGroup = new Group();
+    quanGroup.add(mesh1, mesh2);
+    this.group.add(quanGroup);
+
+    return quanGroup;
+    /*
+    this.quanGroup = new Group()
+    this.quanGroup.add(mesh1, mesh2)
+    this.scene.add(this.quanGroup)
+    this.time.on("tick", () => {
+      mesh1.rotation.z += 0.05
+    })
+    return this.quanGroup
+
+    */
   }
 }

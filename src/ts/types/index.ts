@@ -66,6 +66,8 @@ type mapOptions = {
   deep: number,
   sideTexture: Texture,
   huiguangTexture: Texture,
+  guangquan01: Texture,
+  guangquan02: Texture,
 }
 
 export default punctuation;
