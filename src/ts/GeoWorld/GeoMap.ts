@@ -87,16 +87,9 @@ export default class GeoMap {
     });
     //创建光柱
     this.createBar([110.109828, 25.047893]);
-
     this.createBar([120.109828, 29.047893]);
-
-
     this.createBar([104.109828, 28.047893]);
-
-
     //this.createBar([110.109828, 25.047893]);
-
-
   }
 
   createBar(array: number[]){
