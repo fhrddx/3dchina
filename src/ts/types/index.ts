@@ -65,6 +65,7 @@ type mapOptions = {
   activeLineColor: number,
   deep: number,
   sideTexture: Texture,
+  huiguangTexture: Texture,
 }
 
 export default punctuation;

@@ -1,7 +1,8 @@
-import { BackSide, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, FrontSide, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, MeshStandardMaterial, Shape, Vector3 } from 'three';
+import THREE, { AdditiveBlending, BackSide, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, FrontSide, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, Shape, sRGBEncoding, Vector3 } from 'three';
 import ChinaGeoJson from '../../json/ChinaGeoJson.json';
 import * as d3 from'd3-geo'; 
 import { mapOptions } from '../types';
+import { GradientShader } from './GradientShader';
 
 export default class GeoMap {
   public group: Group;
@@ -83,5 +84,66 @@ export default class GeoMap {
         this.group.add(provinceGroup);
       });
     });
+    //创建光柱
+    this.createBar();
+  }
+
+  createBar(){
+    const factor = 0.7
+    const height = 25.0 * factor
+    const geoHeight = height;
+    let material = new MeshBasicMaterial({
+      color: 0x77fbf5,
+      transparent: true,
+      opacity: 0.7,
+      depthTest: false,
+      fog: false,
+    })
+  
+    new GradientShader(material, {
+      uColor1: 0xfbdf88,
+      uColor2: 0xffffff,
+      size: geoHeight,
+      dir: "y",
+    })
+      
+    const geo = new BoxGeometry(1, 1, geoHeight)
+    geo.translate(0, 0, geoHeight / 2)
+    const mesh = new Mesh(geo, material);
+    let areaBar = mesh;
+    const projection = d3.geoMercator().center([104.0, 37.5]).translate([0, 0]);
+    let [x, y] = projection([110.109828, 25.047893])
+    areaBar.position.set(x, -y, this.mapStyle.deep + 0.3)
+    //areaBar.scale.set(1, 1, 0);
+    let hg = this.createHUIGUANG(geoHeight, 0xfffef4)
+    areaBar.add(...hg)
+    this.group.add(areaBar)
+  }
+
+  createHUIGUANG(h, color) {
+    let geometry = new PlaneGeometry(6, h)
+    geometry.translate(0, h / 2, 0)
+    const texture = this.mapStyle.huiguangTexture
+    //texture.colorSpace = "srgb"
+    texture.encoding = sRGBEncoding;
+    texture.wrapS = RepeatWrapping
+    texture.wrapT = RepeatWrapping
+    let material = new MeshBasicMaterial({
+      color: color,
+      map: texture,
+      transparent: true,
+      opacity: 0.4,
+      depthWrite: false,
+      side: DoubleSide,
+      blending: AdditiveBlending,
+    })
+    let mesh = new Mesh(geometry, material)
+    mesh.renderOrder = 10
+    mesh.rotateX(Math.PI / 2)
+    let mesh2 = mesh.clone()
+    let mesh3 = mesh.clone()
+    mesh2.rotateY((Math.PI / 180) * 60)
+    mesh3.rotateY((Math.PI / 180) * 120)
+    return [mesh, mesh2, mesh3]
   }
 }
