@@ -7,12 +7,14 @@ import * as THREE from 'three';
 import {
   OrbitControls
 } from "three/examples/jsm/controls/OrbitControls";
+import { CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 
 export class Basic {
   public dom: HTMLElement;
   public scene: THREE.Scene;
   public camera: THREE.PerspectiveCamera;
-  public renderer: THREE.WebGLRenderer
+  public renderer: THREE.WebGLRenderer;
+  public css3DRenderer: CSS3DRenderer;
   public controls: OrbitControls;
   
   constructor(dom: HTMLElement) {
@@ -47,6 +49,14 @@ export class Basic {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     //注解：添加到dom中
     this.dom.appendChild(this.renderer.domElement);
+
+    //注解：同理，设置css3d渲染器
+    this.css3DRenderer = new CSS3DRenderer();
+    this.css3DRenderer.setSize(window.innerWidth, window.innerHeight);
+    this.css3DRenderer.domElement.style.position = 'absolute';
+    this.css3DRenderer.domElement.style.top = '0';
+    this.css3DRenderer.domElement.style.zIndex = '100';
+    document.body.appendChild(this.css3DRenderer.domElement);
   }
 
   //注解：设置轨道控制器，主要目的是实现放大缩小、拖拽、点击， 原理是控制照相机的运行轨迹

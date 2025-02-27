@@ -6,6 +6,7 @@ import { Basic } from "../world/Basic";
 import GeoMap from "./GeoMap";
 import { mapOptions } from "../types";
 import { Resources } from "../world/Resources";
+import { CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 
 export default class GeoWorld {
     //注解：option 是外部传进来的，有一个属性dom，并保存起来
@@ -13,7 +14,8 @@ export default class GeoWorld {
     //注解：通过Basic封装，生成 scene、camera、renderer、controls 这4个three.js最重要的概念
     private scene: Scene;
     private camera: PerspectiveCamera;
-    private renderer: WebGLRenderer
+    private renderer: WebGLRenderer;
+    private css3DRenderer: CSS3DRenderer;
     private controls: OrbitControls;
     //注解：尺寸监听器
     private sizes: Sizes;
@@ -37,6 +39,7 @@ export default class GeoWorld {
       this.camera = basic.camera;
       this.camera.position.set(0, -120, 250);
       this.renderer = basic.renderer;
+      this.css3DRenderer = basic.css3DRenderer;
       this.controls = basic.controls;
       //注解：加上辅助线，试一下（红色X轴，绿色Y轴，蓝色Z轴）
       const axesHelper = new AxesHelper(200);
@@ -46,6 +49,7 @@ export default class GeoWorld {
       this.sizes.$on('resize', () => {
         //注解：第1步，渲染器改变下长度、宽度，这样就不会被遮挡，会充满整个父容器
         this.renderer.setSize(Number(this.sizes.viewport.width), Number(this.sizes.viewport.height));
+        this.css3DRenderer.setSize(Number(this.sizes.viewport.width), Number(this.sizes.viewport.height));
         //注解：第2步，相机重新设置下长宽比, 否则成相会被压缩或者拉长，就会很难看
         this.camera.aspect = Number(this.sizes.viewport.width) / Number(this.sizes.viewport.height);
         this.camera.updateProjectionMatrix();
@@ -113,6 +117,7 @@ export default class GeoWorld {
     render() {
       requestAnimationFrame(this.render.bind(this))
       this.renderer.render(this.scene, this.camera);
+      this.css3DRenderer.render(this.scene, this.camera);
       this.controls && this.controls.update();
       this.raycasterEvent();
     }
