@@ -60,9 +60,9 @@ export default class GeoWorld {
         sideTexture.offset.y += 1.88
         //注解：添加地图的样式
         this.mapStyle = {
-          planeColor: 0x1b4c4c,
-          sideColor: 0x0d6c9a,
-          lineColor: 0xe3e4e4,
+          planeColor: 0x2d9bd8,
+          sideColor: 0x094869,
+          lineColor: 0xbfe5f4,
           activePlaneColor: 0x94c8e3,
           activeSideColor: 0x094869,
           activeLineColor: 0xbfe5f4,

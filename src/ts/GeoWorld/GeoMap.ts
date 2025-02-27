@@ -68,35 +68,11 @@ export default class GeoMap {
           opacity: 0.9,
         })
         material.needsUpdate = true;
-
-
-
-
-
-        /*
         const sideMaterial = new MeshBasicMaterial({
           color: new Color(this.mapStyle.sideColor),
           transparent: true,
           opacity: 0.5,
         })
-        */
-
-
-
-        const sideMaterial = new MeshBasicMaterial({
-          color: 0xa3ffc3,
-          map: this.mapStyle.sideTexture,
-          fog: false,
-          opacity: 0,
-          side: FrontSide,
-        })
-
-
-
-
-
-
-
         sideMaterial.needsUpdate = true;
         const mesh = new Mesh(geometry, [material, sideMaterial]);
         mesh.name = 'province_mesh'
