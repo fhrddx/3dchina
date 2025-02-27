@@ -63,6 +63,7 @@ export class Basic {
   setControls() {
     //注解：初始化轨道控制器
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls = new OrbitControls(this.camera, this.css3DRenderer.domElement);
     //注解：这个是用来干什么的，暂时不是很清楚
     this.controls.autoRotateSpeed = 3
     //注解：使动画循环使用时阻尼或自转，意思是否有惯性，设置为true，拖拽有惯性，更加丝滑
