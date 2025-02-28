@@ -92,10 +92,14 @@ export default class GeoMap {
     this.createBar([104.109828, 28.047893]);
   }
 
+
+
+
+  //创建光柱
   createBar(array: number[]){
-    const factor = 0.7
-    const height = 25.0 * factor
-    const geoHeight = height;
+    //光柱的高度
+    const barHeight = 20;
+    //光柱长方体的材质
     const material = new MeshBasicMaterial({
       color: 0x77fbf5,
       transparent: true,
@@ -103,14 +107,21 @@ export default class GeoMap {
       depthTest: false,
       fog: false,
     })
-  
-    const geo = new BoxGeometry(1, 1, geoHeight)
-    geo.translate(0, 0, geoHeight / 2)
-    const mesh = new Mesh(geo, material);
-    const areaBar = mesh;
+    //创建光柱立方体（这时候，光柱被XOY平面平分成2部分）
+    const box = new BoxGeometry(1, 1, barHeight);
+    //让光柱的底部贴近XOY平面（往Z轴位移半截柱体的距离）
+    box.translate(0, 0, barHeight / 2);
+    //创建3D物体
+    const areaBar = new Mesh(box, material);
+    areaBar.name = 'province_bar';
+    areaBar.userData['properties'] = {
+      name: '中国',
+      value: '200'
+    };
     const [x, y] = this.projection(array);
-    areaBar.position.set(x, -y, this.mapStyle.deep + 0.3)
-    const hg = this.createHUIGUANG(geoHeight, 0xfffef4)
+    areaBar.position.set(x, -y, this.mapStyle.deep + 0.3);
+
+    const hg = this.createHUIGUANG(barHeight, 0xfffef4)
     areaBar.add(...hg);
     this.group.add(areaBar);
     
@@ -119,7 +130,7 @@ export default class GeoMap {
     const label = this.createLabel();
     label.scale.set(0.1, 0.1, 0.1);
     label.rotation.x = Math.PI/2;
-    label.position.set(x, -y, this.mapStyle.deep + 0.3 + geoHeight);
+    label.position.set(x, -y, this.mapStyle.deep + 0.3 + barHeight);
     this.group.add(label)
   }
 
