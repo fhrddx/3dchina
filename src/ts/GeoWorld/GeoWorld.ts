@@ -34,7 +34,7 @@ export default class GeoWorld {
       //注解：option 是外部传进来的，有一个属性dom，并保存起来
       this.option = option;
       //注解：通过Basic封装，生成 scene、camera、renderer、controls 这4个three.js最重要的概念
-      const basic = new Basic(option.dom);
+      const basic = new Basic(this.option.dom);
       this.scene = basic.scene;
       this.camera = basic.camera;
       this.camera.position.set(0, -220, 250);
@@ -42,8 +42,8 @@ export default class GeoWorld {
       this.css3DRenderer = basic.css3DRenderer;
       this.controls = basic.controls;
       //注解：加上辅助线，试一下（红色X轴，绿色Y轴，蓝色Z轴）
-      //const axesHelper = new AxesHelper(200);
-      //this.scene.add(axesHelper);
+      const axesHelper = new AxesHelper(200);
+      this.scene.add(axesHelper);
       //注解：监听可视范围的尺寸
       this.sizes = new Sizes({ dom: option.dom })
       this.sizes.$on('resize', () => {
