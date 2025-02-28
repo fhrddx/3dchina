@@ -7,12 +7,15 @@ import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
 
 export default class GeoMap {
   public group: Group;
-  private mapStyle: mapOptions
+  private mapStyle: mapOptions;
+  private projection: (array: number[]) => number[];
 
   constructor(mapStyleOption: mapOptions){
     this.mapStyle = mapStyleOption;
     this.group = new Group();
     this.group.name = 'map_group';
+    //经纬度投影转化函数
+    this.projection = d3.geoMercator().center([104.0, 37.5]).translate([0, 0]);
   }
 
   create(){
@@ -20,8 +23,7 @@ export default class GeoMap {
     if(!hasData){
       return;
     }
-    //转化函数
-    const projection = d3.geoMercator().center([104.0, 37.5]).translate([0, 0]);
+    
     //遍历所有的省
     ChinaGeoJson.features.forEach(provinceObject => {
       //每个省创建一个组合
@@ -37,7 +39,7 @@ export default class GeoMap {
         const vertices = [];
         //每个圈的所有的点，都遍历一次，每个点都是包含2个数字的数组
         for (let i = 0; i < oneCircle.length; i++) {
-          const [x, y] = projection(oneCircle[i]);
+          const [x, y] = this.projection(oneCircle[i]);
           //这里存在着一个很严重的问题，那就是geojson数据可能本身有问题，导致投影了之后，出现 NAN 的值，需要具体查下是什么原因？？？？
           if(!isNaN(x) && !isNaN(y)){
             if (i === 0) {
@@ -107,8 +109,7 @@ export default class GeoMap {
     geo.translate(0, 0, geoHeight / 2)
     const mesh = new Mesh(geo, material);
     const areaBar = mesh;
-    const projection = d3.geoMercator().center([104.0, 37.5]).translate([0, 0]);
-    const [x, y] = projection(array)
+    const [x, y] = this.projection(array);
     areaBar.position.set(x, -y, this.mapStyle.deep + 0.3)
     const hg = this.createHUIGUANG(geoHeight, 0xfffef4)
     areaBar.add(...hg);
