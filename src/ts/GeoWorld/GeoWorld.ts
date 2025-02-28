@@ -70,7 +70,7 @@ export default class GeoWorld {
           activePlaneColor: 0x94c8e3,
           activeSideColor: 0x094869,
           activeLineColor: 0xbfe5f4,
-          deep: 8,
+          deep: 5.5,
           sideTexture: sideTexture,
           huiguangTexture: this.resources.textures.huiguang,
           guangquan01: this.resources.textures.guangquan01,
