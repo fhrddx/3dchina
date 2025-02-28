@@ -134,12 +134,14 @@ export default class GeoMap {
     label.scale.set(0.1, 0.1, 0.1);
     label.rotation.x = Math.PI/2;
     label.position.set(x, -y, this.mapStyle.deep + 0.3 + barHeight);
-    
+
     this.group.add(label)
   }
 
 
 
+
+  
 
   //柱体内部，加上几个平面
   createBarLights(height: number, color: number) {
