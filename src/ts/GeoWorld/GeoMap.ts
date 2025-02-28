@@ -200,7 +200,7 @@ export default class GeoMap {
           </div>
         </div>
     `
-    let tag = document.createElement("div")
+    const tag = document.createElement("div")
     tag.innerHTML = content
     tag.className = 'provinces-label';
     tag.style.position = "absolute";
