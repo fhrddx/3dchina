@@ -67,7 +67,7 @@ export default class GeoMap {
         const material = new MeshBasicMaterial({
           color: new Color(this.mapStyle.planeColor),
           transparent: true,
-          opacity: 0.9,
+          opacity: 0.8,
         })
         material.needsUpdate = true;
         const sideMaterial = new MeshBasicMaterial({
