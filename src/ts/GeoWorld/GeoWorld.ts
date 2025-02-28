@@ -1,4 +1,4 @@
-import { AxesHelper, CameraHelper, Intersection, Object3D, PerspectiveCamera, Raycaster, RepeatWrapping, Scene, Vector2, WebGLRenderer } from "three";
+import { AxesHelper, Intersection, PerspectiveCamera, Raycaster, RepeatWrapping, Scene, Vector2, WebGLRenderer } from "three";
 import { IGeoWorld } from "../interfaces/IGeoWorld";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Sizes from "../Utils/Sizes";
