@@ -29,7 +29,7 @@ export class Basic {
 
     //注解：第2步，Camera，初始化照相机，并摆好照相机的位置，之所以z轴变成-250，就是最先看到中国
     this.camera = new THREE.PerspectiveCamera(
-      45,
+      30,
       window.innerWidth / window.innerHeight,
       1,
       100000
