@@ -113,10 +113,9 @@ export default class GeoWorld {
     //鼠标移动记录位置，注意这个如果换成renderer，反而无法触发相关的事件，想一下这里面的原因
     this.css3DRenderer.domElement.addEventListener('mousemove', e => {
       const x = e.clientX / window.innerWidth * 2 - 1;
-      const y = -(e.clientY / window.innerHeight) * 2 + 1;
+      const y = -1 * (e.clientY / window.innerHeight) * 2 + 1;
       this.mouse.x = x;
       this.mouse.y = y;
-      console.log(x)
       //更改div位置
       this.tooltip.style.left = e.clientX + 20 + 'px'
       this.tooltip.style.top = e.clientY + 5 + 'px'
@@ -141,7 +140,7 @@ export default class GeoWorld {
     //每一帧都发一次射线，并获取射线拾取到的物体
     this.raycaster.setFromCamera(this.mouse, this.camera);
     const intersects = this.raycaster.intersectObjects(
-      //注意，这里的 scene.children 范围太广，可以适当的减少下范围
+      //注意，这里的 scene.children 范围太广，可以适当的减少下范围 -------------------------这个代码有待优化，因为这个集合太广
       this.scene.children,
       true
     );
@@ -153,7 +152,7 @@ export default class GeoWorld {
       this.removeHover();
       return;
     }
-    //筛选出拾取到的第一个物体
+    //筛选出拾取到的第一个物体-------------------------这个代码有待优化，因为可能不止 province_mesh 这种类型需要做 hover
     const province = intersects.find(i => i.object.name === 'province_mesh');
     if(!province){
       return;
