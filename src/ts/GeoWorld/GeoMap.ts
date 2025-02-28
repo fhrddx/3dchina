@@ -23,7 +23,6 @@ export default class GeoMap {
     if(!hasData){
       return;
     }
-    
     //遍历所有的省
     ChinaGeoJson.features.forEach(provinceObject => {
       //每个省创建一个组合
