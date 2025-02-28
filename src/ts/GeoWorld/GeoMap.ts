@@ -16,6 +16,11 @@ export default class GeoMap {
     this.group.name = 'map_group';
     //经纬度投影转化函数
     this.projection = d3.geoMercator().center([104.0, 37.5]).translate([0, 0]);
+    //设置下贴图的属性
+    const texture = this.mapStyle.huiguangTexture;
+    texture.encoding = sRGBEncoding;
+    texture.wrapS = RepeatWrapping;
+    texture.wrapT = RepeatWrapping;
   }
 
   create(){
@@ -92,9 +97,6 @@ export default class GeoMap {
     this.createBar([104.109828, 28.047893]);
   }
 
-
-
-
   //创建光柱
   createBar(array: number[]){
     //光柱的高度
@@ -120,46 +122,60 @@ export default class GeoMap {
     };
     const [x, y] = this.projection(array);
     areaBar.position.set(x, -y, this.mapStyle.deep + 0.3);
-
-    const hg = this.createHUIGUANG(barHeight, 0xfffef4)
-    areaBar.add(...hg);
+    //柱体内部加上光平面
+    const lights = this.createBarLights(barHeight, 0xfffef4)
+    areaBar.add(...lights);
     this.group.add(areaBar);
     
+    //在柱体的下面, 添加波动光圈
     this.createQuan(new Vector3(x, -y, this.mapStyle.deep + 0.4));
 
     const label = this.createLabel();
     label.scale.set(0.1, 0.1, 0.1);
     label.rotation.x = Math.PI/2;
     label.position.set(x, -y, this.mapStyle.deep + 0.3 + barHeight);
+    
     this.group.add(label)
   }
 
-  createHUIGUANG(h, color) {
-    const geometry = new PlaneGeometry(6, h)
-    geometry.translate(0, h / 2, 0)
-    const texture = this.mapStyle.huiguangTexture;
-    //texture.colorSpace = "srgb"
-    texture.encoding = sRGBEncoding;
-    texture.wrapS = RepeatWrapping
-    texture.wrapT = RepeatWrapping
+
+
+
+  //柱体内部，加上几个平面
+  createBarLights(height: number, color: number) {
+    const geometry = new PlaneGeometry(4, height);
+    geometry.translate(0, height / 2, 0);
     const material = new MeshBasicMaterial({
       color: color,
-      map: texture,
+      map: this.mapStyle.huiguangTexture,
       transparent: true,
       opacity: 0.4,
       depthWrite: false,
       side: DoubleSide,
       blending: AdditiveBlending,
     })
-    const mesh = new Mesh(geometry, material)
+    const mesh = new Mesh(geometry, material);
     mesh.renderOrder = 10
-    mesh.rotateX(Math.PI / 2)
-    const mesh2 = mesh.clone()
-    const mesh3 = mesh.clone()
-    mesh2.rotateY((Math.PI / 180) * 60)
-    mesh3.rotateY((Math.PI / 180) * 120)
-    return [mesh, mesh2, mesh3]
+    mesh.rotateX(Math.PI / 2);
+    const mesh2 = mesh.clone();
+    const mesh3 = mesh.clone();
+    mesh2.rotateY((Math.PI / 180) * 60);
+    mesh3.rotateY((Math.PI / 180) * 120);
+    return [mesh, mesh2, mesh3];
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   createQuan(position) {
     const guangquan1 = this.mapStyle.guangquan01
