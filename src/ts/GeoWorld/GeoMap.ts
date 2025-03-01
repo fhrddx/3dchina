@@ -23,6 +23,7 @@ export default class GeoMap {
     texture.wrapT = RepeatWrapping;
   }
 
+  //创建地图
   create(){
     const hasData = ChinaGeoJson && ChinaGeoJson.features && ChinaGeoJson.features.length > 0;
     if(!hasData){
@@ -47,9 +48,9 @@ export default class GeoMap {
           //这里存在着一个很严重的问题，那就是geojson数据可能本身有问题，导致投影了之后，出现 NAN 的值，需要具体查下是什么原因？？？？
           if(!isNaN(x) && !isNaN(y)){
             if (i === 0) {
-              shape.moveTo(x, -y)
+              shape.moveTo(x, -y);
             }
-            shape.lineTo(x, -y)
+            shape.lineTo(x, -y);
             vertices.push(x, -y, this.mapStyle.deep);
           }
         }
@@ -58,9 +59,9 @@ export default class GeoMap {
         lineGeometry.setAttribute("position", new BufferAttribute(new Float32Array(vertices), 3));
         const lineMaterial = new LineBasicMaterial({
           color: new Color(this.mapStyle.lineColor),
-        })
+        });
         const line = new Line(lineGeometry, lineMaterial);
-        line.name = 'province_line'
+        line.name = 'province_line';
         //由shape平面挤压出一定的厚度物体
         const extrudeSettings = {
           depth: this.mapStyle.deep,
@@ -69,21 +70,21 @@ export default class GeoMap {
         const geometry = new ExtrudeGeometry(
           shape,
           extrudeSettings
-        )
+        );
         const material = new MeshBasicMaterial({
           color: new Color(this.mapStyle.planeColor),
           transparent: true,
           opacity: 0.8,
-        })
+        });
         material.needsUpdate = true;
         const sideMaterial = new MeshBasicMaterial({
           color: new Color(this.mapStyle.sideColor),
           transparent: true,
           opacity: 0.5,
-        })
+        });
         sideMaterial.needsUpdate = true;
         const mesh = new Mesh(geometry, [material, sideMaterial]);
-        mesh.name = 'province_mesh'
+        mesh.name = 'province_mesh';
         //最后加入各个组合中
         provinceGroup.add(line);
         provinceGroup.add(mesh);
@@ -108,12 +109,12 @@ export default class GeoMap {
       opacity: 0.7,
       depthTest: false,
       fog: false,
-    })
+    });
     //创建光柱立方体（这时候，光柱被XOY平面平分成2部分）
     const box = new BoxGeometry(1, 1, barHeight);
     //让光柱的底部贴近XOY平面（往Z轴位移半截柱体的距离）
     box.translate(0, 0, barHeight / 2);
-    //创建3D物体
+    //创建3D物体，并添加自定义属性properties，方便在hover的时候用到
     const areaBar = new Mesh(box, material);
     areaBar.name = 'province_bar';
     areaBar.userData['properties'] = {
@@ -123,25 +124,21 @@ export default class GeoMap {
     const [x, y] = this.projection(array);
     areaBar.position.set(x, -y, this.mapStyle.deep + 0.3);
     //柱体内部加上光平面
-    const lights = this.createBarLights(barHeight, 0xfffef4)
+    const lights = this.createBarLights(barHeight, 0xfffef4);
     areaBar.add(...lights);
     this.group.add(areaBar);
     
     //在柱体的下面, 添加波动光圈
-    this.createQuan(new Vector3(x, -y, this.mapStyle.deep + 0.4));
-
+    const circles = this.createQuan(new Vector3(x, -y, this.mapStyle.deep + 0.4));
+    this.group.add(circles);
+    
+    //在柱体旁边，加上一个牌匾
     const label = this.createLabel();
     label.scale.set(0.1, 0.1, 0.1);
-    label.rotation.x = Math.PI/2;
+    label.rotation.x = Math.PI / 2;
     label.position.set(x, -y, this.mapStyle.deep + 0.3 + barHeight);
-
-    this.group.add(label)
+    this.group.add(label);
   }
-
-
-
-
-  
 
   //柱体内部，加上几个平面
   createBarLights(height: number, color: number) {
@@ -155,9 +152,9 @@ export default class GeoMap {
       depthWrite: false,
       side: DoubleSide,
       blending: AdditiveBlending,
-    })
+    });
     const mesh = new Mesh(geometry, material);
-    mesh.renderOrder = 10
+    mesh.renderOrder = 10;
     mesh.rotateX(Math.PI / 2);
     const mesh2 = mesh.clone();
     const mesh3 = mesh.clone();
@@ -166,23 +163,11 @@ export default class GeoMap {
     return [mesh, mesh2, mesh3];
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+  //在柱体的底部加上光圈
   createQuan(position) {
-    const guangquan1 = this.mapStyle.guangquan01
-    const guangquan2 = this.mapStyle.guangquan02
-    const geometry = new PlaneGeometry(5, 5)
+    const guangquan1 = this.mapStyle.guangquan01;
+    const guangquan2 = this.mapStyle.guangquan02;
+    const geometry = new PlaneGeometry(5, 5);
     const material1 = new MeshBasicMaterial({
       color: 0xffffff,
       map: guangquan1,
@@ -193,7 +178,7 @@ export default class GeoMap {
       fog: false,
       blending: AdditiveBlending,
       side: DoubleSide
-    })
+    });
     const material2 = new MeshBasicMaterial({
       color: 0xffffff,
       map: guangquan2,
@@ -204,33 +189,33 @@ export default class GeoMap {
       fog: false,
       blending: AdditiveBlending,
       side: DoubleSide
-    })
-    const mesh1 = new Mesh(geometry, material1)
-    const mesh2 = new Mesh(geometry, material2)
-    mesh1.position.copy(position)
-    mesh2.position.copy(position)
-    mesh2.position.y -= 0.001
+    });
+    const mesh1 = new Mesh(geometry, material1);
+    const mesh2 = new Mesh(geometry, material2);
+    mesh1.position.copy(position);
+    mesh2.position.copy(position);
+    mesh2.position.y -= 0.001;
     const quanGroup = new Group();
     quanGroup.add(mesh1, mesh2);
-    this.group.add(quanGroup);
     return quanGroup;
   }
 
+  //加上label标签
   createLabel(){
     const content = `
-     <div class="provinces-label">
-          <div class="provinces-label-wrap">
-            <div class="number"><span class="value">200</span><span class="unit">万人</span></div>
-            <div class="name">
-              <span class="zh">中国</span>
-              <span class="en">CHINA</span>
-            </div>
-            <div class="no">4</div>
+      <div class="provinces-label">
+        <div class="provinces-label-wrap">
+          <div class="number"><span class="value">200</span><span class="unit">万人</span></div>
+          <div class="name">
+            <span class="zh">中国</span>
+            <span class="en">CHINA</span>
           </div>
+          <div class="no">4</div>
         </div>
-    `
-    const tag = document.createElement("div")
-    tag.innerHTML = content
+      </div>
+    `;
+    const tag = document.createElement("div");
+    tag.innerHTML = content;
     tag.className = 'provinces-label';
     tag.style.position = "absolute";
     const label = new CSS3DObject(tag);
