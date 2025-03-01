@@ -1,10 +1,9 @@
-import THREE, { AdditiveBlending, BackSide, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, FrontSide, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, Shape, sRGBEncoding, Vector3 } from 'three';
+import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, FrontSide, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, PlaneGeometry, RepeatWrapping, Shape, sRGBEncoding, Vector3 } from 'three';
 import ChinaGeoJson from '../../json/ChinaGeoJson.json';
 import * as d3 from'd3-geo'; 
-import { mapOptions } from '../types';
-import { GradientShader } from './GradientShader';
+import { mapOptions, saleItem } from '../types';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
-import { valueToClassName } from '@tweakpane/core';
+import saleList from './TestData';
 
 export default class GeoMap {
   public group: Group;
@@ -93,16 +92,18 @@ export default class GeoMap {
         this.group.add(provinceGroup);
       });
     });
-    //创建光柱
-    this.createBar([110.109828, 25.047893]);
-    this.createBar([120.109828, 29.047893]);
-    this.createBar([104.109828, 28.047893]);
+    //遍历所有的销售数据
+    saleList.forEach((item: saleItem) => {
+      const barHeight = 20;
+      const [x, y] = this.projection(item.center);
+      this.createBar(item, x, -y, this.mapStyle.deep + 0.3, barHeight);
+      this.createQuan(x, -y, this.mapStyle.deep + 0.4);
+      this.createLabel(item, x, -y, this.mapStyle.deep, barHeight);
+    });
   }
 
   //创建光柱
-  createBar(array: number[]){
-    //光柱的高度
-    const barHeight = 20;
+  createBar(item: saleItem, x:number, y: number, z: number, barHeight: number){
     //光柱长方体的材质
     const material = new MeshBasicMaterial({
       color: 0x77fbf5,
@@ -119,26 +120,14 @@ export default class GeoMap {
     const areaBar = new Mesh(box, material);
     areaBar.name = 'province_bar';
     areaBar.userData['properties'] = {
-      name: '中国',
-      value: '200'
+      name: item.province,
+      value: item.count
     };
-    const [x, y] = this.projection(array);
-    areaBar.position.set(x, -y, this.mapStyle.deep + 0.3);
+    areaBar.position.set(x, y, z);
     //柱体内部加上光平面
     const lights = this.createBarLights(barHeight, 0xfffef4);
     areaBar.add(...lights);
     this.group.add(areaBar);
-    
-    //在柱体的下面, 添加波动光圈
-    const circles = this.createQuan(new Vector3(x, -y, this.mapStyle.deep + 0.4));
-    this.group.add(circles);
-    
-    //在柱体旁边，加上一个牌匾
-    const label = this.createLabel();
-    label.scale.set(0.1, 0.1, 0.1);
-    label.rotation.x = Math.PI / 2;
-    label.position.set(x, -y, this.mapStyle.deep + 0.3 + barHeight);
-    this.group.add(label);
   }
 
   //柱体内部，加上几个平面
@@ -165,7 +154,8 @@ export default class GeoMap {
   }
 
   //在柱体的底部加上光圈
-  createQuan(position) {
+  createQuan(x: number, y: number, z: number) {
+    const position = new Vector3(x, y, z);
     const guangquan1 = this.mapStyle.guangquan01;
     const guangquan2 = this.mapStyle.guangquan02;
     const geometry = new PlaneGeometry(5, 5);
@@ -198,20 +188,20 @@ export default class GeoMap {
     mesh2.position.y -= 0.001;
     const quanGroup = new Group();
     quanGroup.add(mesh1, mesh2);
-    return quanGroup;
+    this.group.add(quanGroup);
   }
 
   //加上label标签
-  createLabel(){
+  createLabel(item: saleItem, x: number, y: number, z: number, barHeight: number){
     const content = `
       <div class="provinces-label">
         <div class="provinces-label-wrap">
-          <div class="number"><span class="value">200</span><span class="unit">万人</span></div>
+          <div class="number"><span class="value">${item.count}</span><span class="unit">个电站</span></div>
           <div class="name">
-            <span class="zh">中国</span>
-            <span class="en">CHINA</span>
+            <span class="zh">${item.province}</span>
+            <span class="en">${item.provinceEn}</span>
           </div>
-          <div class="no">4</div>
+          <div class="no">${item.rank}</div>
         </div>
       </div>
     `;
@@ -220,11 +210,15 @@ export default class GeoMap {
     tag.className = 'provinces-label';
     tag.style.position = "absolute";
     const label = new CSS3DObject(tag);
+    label.scale.set(0.1, 0.1, 0.1);
+    label.rotation.x = Math.PI / 2;
+    label.position.set(x, y, z + barHeight);
     label.name = 'province_brand';
     label.userData['properties'] = {
-      name: '广东省',
-      value: '900'
+      name: item.province,
+      rank: item.rank,
+      value: item.count
     }
-    return label;
+    this.group.add(label);
   }
 }

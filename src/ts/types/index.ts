@@ -1,5 +1,13 @@
 import { Color, Texture } from "three"
 
+type saleItem = {
+  province: string,
+  provinceEn: string,
+  count: number,
+  rank: number,
+  center: number[]
+}
+
 //注解：光柱以及底座的颜色
 type punctuation = {
   //注解：底座蓝色光圈的颜色
@@ -71,4 +79,4 @@ type mapOptions = {
 }
 
 export default punctuation;
-export { earthOptions,  uniforms, mapOptions };
+export { earthOptions,  uniforms, mapOptions, saleItem };
