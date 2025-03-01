@@ -4,6 +4,7 @@ import * as d3 from'd3-geo';
 import { mapOptions } from '../types';
 import { GradientShader } from './GradientShader';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
+import { valueToClassName } from '@tweakpane/core';
 
 export default class GeoMap {
   public group: Group;
@@ -219,6 +220,11 @@ export default class GeoMap {
     tag.className = 'provinces-label';
     tag.style.position = "absolute";
     const label = new CSS3DObject(tag);
+    label.name = 'province_brand';
+    label.userData['properties'] = {
+      name: '广东省',
+      value: '900'
+    }
     return label;
   }
 }
