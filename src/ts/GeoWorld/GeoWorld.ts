@@ -153,30 +153,37 @@ export default class GeoWorld {
       return;
     }
     //筛选出拾取到的第一个物体-------------------------这个代码有待优化，因为可能不止 province_mesh 这种类型需要做 hover
-    const province = intersects.find(i => i.object.name === 'province_mesh');
-    if(!province){
+    const hoverMesh = intersects.find(i => i.object.name === 'province_mesh' || i.object.name === 'province_bar');
+    if(!hoverMesh){
       return;
     }
     //处理一下hover事件
-    this.handleHover(province);
+    this.handleHover(hoverMesh);
   }
 
   //处理下hover事件
-  handleHover(province: Intersection){
+  handleHover(hoverMesh: Intersection){
     //与上一次hover的物品一样，则无需任何操作
-    if(province === this.currentHoverMesh){
+    if(hoverMesh === this.currentHoverMesh){
       return;
     }else if(this.currentHoverMesh){
+      const lastHoverMeshName = this.currentHoverMesh.object.name;
       //处理上一次hover的物体，恢复其颜色
-      //@ts-ignore
-      this.currentHoverMesh.object.material[0].color.set(this.mapStyle.planeColor);
+      if(lastHoverMeshName === 'province_mesh'){
+        //@ts-ignore
+        this.currentHoverMesh.object.material[0].color.set(this.mapStyle.planeColor);
+      }
     }
+    //判断下当前hover的物体的类型
+    const currentHoverMeshName =  hoverMesh.object.name;
     //重新赋值当前hover对象
-    this.currentHoverMesh = province;
+    this.currentHoverMesh = hoverMesh;
     //显示浮层
     this.showTip();
-    //@ts-ignore
-    province.object.material[0].color.set(this.mapStyle.activePlaneColor);
+    if(currentHoverMeshName === 'province_mesh'){
+      //@ts-ignore
+      this.currentHoverMesh.object.material[0].color.set(this.mapStyle.activePlaneColor);
+    }
   }
 
   //去除所有的hover事件
