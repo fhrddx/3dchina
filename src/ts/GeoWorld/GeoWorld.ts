@@ -222,7 +222,7 @@ export default class GeoWorld {
     if(currentHoverMeshName === 'province_bar'){
       const meshInfo = this.currentHoverMesh.object.userData['properties'];
       this.tooltip.innerHTML = `
-       <div>${meshInfo.name}销售额：<div>
+       <div>${meshInfo.name}销售额&nbsp;&nbsp;<div>
        <div>${meshInfo.value} 万元<div>
       `;
       this.tooltip.style.visibility = 'visible';
