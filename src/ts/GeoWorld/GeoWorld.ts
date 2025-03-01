@@ -202,15 +202,28 @@ export default class GeoWorld {
     if(!this.currentHoverMesh){
       return;
     }
-    const parent = this.currentHoverMesh.object.parent;
-    if(!parent){
+    //获取当前hover的物体类型，根据name来判断
+    const currentHoverMeshName = this.currentHoverMesh.object.name;
+    //如果hover是省份的物体
+    if(currentHoverMeshName === 'province_mesh'){
+      const parent = this.currentHoverMesh.object.parent;
+      if(!parent){
+        return;
+      }
+      const parentInfo = parent.userData['properties'];
+      if(!parentInfo){
+        return;
+      }
+      this.tooltip.textContent = parentInfo.name;
+      this.tooltip.style.visibility = 'visible';
       return;
     }
-    const parentInfo = parent.userData['properties'];
-    if(!parentInfo){
+    //如果hover是光柱
+    if(currentHoverMeshName === 'province_bar'){
+      const meshInfo = this.currentHoverMesh.object.userData['properties'];
+      this.tooltip.textContent = meshInfo.name;
+      this.tooltip.style.visibility = 'visible';
       return;
     }
-    this.tooltip.textContent = parentInfo.name;
-    this.tooltip.style.visibility = 'visible';
   }
 }
