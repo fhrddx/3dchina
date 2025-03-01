@@ -85,6 +85,10 @@ export default class GeoWorld {
         guangquan01: this.resources.textures.guangquan01,
         //地图光圈贴图2
         guangquan02: this.resources.textures.guangquan02,
+        //柱体最大高度
+        barheightmax: 20,
+        //柱体最小高度
+        barheightmin: 10
       }
       this.createMap();
     })

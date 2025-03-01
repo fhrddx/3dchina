@@ -76,6 +76,8 @@ type mapOptions = {
   huiguangTexture: Texture,
   guangquan01: Texture,
   guangquan02: Texture,
+  barheightmax: number,
+  barheightmin: number
 }
 
 export default punctuation;
