@@ -93,13 +93,24 @@ export default class GeoMap {
       });
     });
     //遍历所有的销售数据
+    let max: number = 0;
+    let min: number = 0;
     saleList.forEach((item: saleItem) => {
-      const barHeight = 20;
+      const count = item.count;
+      if(count > max){
+        max = count;
+      }
+      if(count < min){
+        min = count;
+      }
+    })
+    saleList.forEach((item: saleItem) => {
+      const barHeight = this.mapStyle.barheightmin + Math.floor((item.count - min) / (max - min) * (this.mapStyle.barheightmax - this.mapStyle.barheightmin));
       const [x, y] = this.projection(item.center);
       this.createBar(item, x, -y, this.mapStyle.deep + 0.3, barHeight);
       this.createQuan(x, -y, this.mapStyle.deep + 0.4);
       this.createLabel(item, x, -y, this.mapStyle.deep, barHeight);
-    });
+    })
   }
 
   //创建光柱
