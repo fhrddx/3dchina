@@ -152,7 +152,7 @@ export default class GeoWorld {
       this.removeHover();
       return;
     }
-    //筛选出拾取到的第一个物体-------------------------这个代码有待优化，因为可能不止 province_mesh 这种类型需要做 hover
+    //筛选出拾取到的第一个物体
     const hoverMesh = intersects.find(i => i.object.name === 'province_mesh' || i.object.name === 'province_bar');
     if(!hoverMesh){
       return;
@@ -167,17 +167,17 @@ export default class GeoWorld {
     if(hoverMesh === this.currentHoverMesh){
       return;
     }else if(this.currentHoverMesh){
+      //处理上一次hover的物体，恢复其颜色等样式
       const lastHoverMeshName = this.currentHoverMesh.object.name;
-      //处理上一次hover的物体，恢复其颜色
       if(lastHoverMeshName === 'province_mesh'){
         //@ts-ignore
         this.currentHoverMesh.object.material[0].color.set(this.mapStyle.planeColor);
       }
     }
-    //判断下当前hover的物体的类型
-    const currentHoverMeshName =  hoverMesh.object.name;
     //重新赋值当前hover对象
     this.currentHoverMesh = hoverMesh;
+    //判断下当前hover的物体的类型
+    const currentHoverMeshName = hoverMesh.object.name;
     //显示浮层
     this.showTip();
     if(currentHoverMeshName === 'province_mesh'){
@@ -221,7 +221,10 @@ export default class GeoWorld {
     //如果hover是光柱
     if(currentHoverMeshName === 'province_bar'){
       const meshInfo = this.currentHoverMesh.object.userData['properties'];
-      this.tooltip.textContent = meshInfo.name;
+      this.tooltip.innerHTML = `
+       <div>${meshInfo.name}销售额：<div>
+       <div>${meshInfo.value} 万元<div>
+      `;
       this.tooltip.style.visibility = 'visible';
       return;
     }
