@@ -1,9 +1,10 @@
-import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, FrontSide, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, PlaneGeometry, RepeatWrapping, Shape, sRGBEncoding, Vector3 } from 'three';
+import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, FrontSide, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, PlaneGeometry, RepeatWrapping, Shape, Sprite, SpriteMaterial, sRGBEncoding, Vector3 } from 'three';
 import ChinaGeoJson from '../../json/ChinaGeoJson.json';
 import * as d3 from'd3-geo'; 
-import { mapOptions, saleItem } from '../types';
+import { mapOptions, pointItem, saleItem } from '../types';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
 import saleList from './TestData';
+import points from './ImportantPoints';
 
 export default class GeoMap {
   public group: Group;
@@ -259,6 +260,22 @@ export default class GeoMap {
 
   //添加重点标注的地方
   createPoints(){
-
+    const colors = [0xfffef4, 0x77fbf5];
+    const texture = this.mapStyle.pointTexture;
+    const size = 8;
+    points.forEach((p: pointItem, index: number) => {
+      const material = new SpriteMaterial({
+        map: texture,
+        color: colors[index % colors.length],
+        fog: false,
+        transparent: true,
+        depthTest: false,
+      })
+      const sprite = new Sprite(material);
+      const [x, y] = this.projection(p.center);
+      sprite.scale.set(size, size, size);
+      sprite.position.set(x, -y, this.mapStyle.deep + size / 3);
+      this.group.add(sprite);
+    })
   }
 }
