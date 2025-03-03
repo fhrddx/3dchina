@@ -36,7 +36,7 @@ export default class GeoWorld {
     const basic = new Basic(this.option.dom);
     this.scene = basic.scene;
     this.camera = basic.camera;
-    this.camera.position.set(0, -220, 250);
+    this.camera.position.set(0, -300, 250);
     this.renderer = basic.renderer;
     this.css3DRenderer = basic.css3DRenderer;
     this.controls = basic.controls;
