@@ -25,6 +25,8 @@ export default class GeoWorld {
   private raycaster: Raycaster;
   private mouse: Vector2;
   private tooltip: any;
+  //监听页面点击事件
+  private clickRaycaster: Raycaster;
   //保留射线拾取的物体
   private currentHoverMesh: Intersection;
   //资源加载器
@@ -131,6 +133,13 @@ export default class GeoWorld {
       //更改div位置
       this.tooltip.style.left = e.clientX + 20 + 'px'
       this.tooltip.style.top = e.clientY + 5 + 'px'
+    })
+    //注册一下点击事件
+    this.clickRaycaster = new Raycaster();
+    this.css3DRenderer.domElement.addEventListener('click', e => {
+      const x = e.clientX / window.innerWidth * 2 - 1;
+      const y = -1 * (e.clientY / window.innerHeight) * 2 + 1;
+      this.click(x, y);
     })
   }
 
@@ -248,6 +257,45 @@ export default class GeoWorld {
        <div>${meshInfo.value} 万元<div>
       `;
       this.tooltip.style.visibility = 'visible';
+      return;
+    }
+  }
+
+  //响应点击事件
+  click(x: number, y: number){
+    //每一帧都发一次射线，并获取射线拾取到的物体
+    this.clickRaycaster.setFromCamera(new Vector2(x, y), this.camera);
+    const intersects = this.clickRaycaster.intersectObjects(
+      //注意，这里的 scene.children 范围太广，可以适当的减少下范围
+      this.clickMeshs,
+      true
+    );
+    //没有拾取到任何物体，直接返回
+    const intersectsHasData = intersects && intersects.length > 0;
+    if(!intersectsHasData){
+      return;
+    }
+    //筛选出拾取到的第一个物体
+    const clickMesh = intersects.find(i => i.object.name === 'province_mesh' || i.object.name === 'province_bar' || i.object.name === 'province_point');
+    if(!clickMesh){
+      return;
+    }
+    //处理一下hover事件
+    if(clickMesh.object.name === 'province_mesh'){
+      const parent = clickMesh.object.parent;
+      if(!parent){
+        return;
+      }
+      const data = parent.userData['properties'];
+      if(!data){
+        return;
+      }
+      alert(JSON.stringify(data));
+      return;
+    }
+    if(clickMesh.object.name === 'province_point'){
+      const data = clickMesh.object.userData['properties'];
+      alert(JSON.stringify(data));
       return;
     }
   }
