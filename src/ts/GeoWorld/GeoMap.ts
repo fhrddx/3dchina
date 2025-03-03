@@ -134,6 +134,8 @@ export default class GeoMap {
     })
     //重点标注
     this.createPoints();
+    //标注下牌匾
+    this.createWall();
   }
 
   //创建光柱
@@ -282,5 +284,22 @@ export default class GeoMap {
       };
       this.group.add(sprite);
     })
+  }
+
+  //添加相关的牌匾
+  createWall(){
+    const content = `
+      <div class="country-cn">中国</div>
+      <div class="country-en">CHINA</div>
+    `;
+    const tag = document.createElement("div");
+    tag.innerHTML = content;
+    tag.className = 'country-label';
+    tag.style.position = "absolute";
+    const label = new CSS3DObject(tag);
+    label.scale.set(0.1, 0.1, 0.1);
+    label.rotation.x = Math.PI / 2;
+    label.position.set(15, -68, 2);
+    this.group.add(label);
   }
 }
