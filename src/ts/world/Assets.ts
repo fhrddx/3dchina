@@ -28,6 +28,7 @@ const fileSuffix = [
   'huiguang',
   'guangquan01',
   'guangquan02',
+  'point'
 ]
 
 const textures = fileSuffix.map(item => {

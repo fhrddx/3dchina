@@ -77,6 +77,10 @@ export default class GeoWorld {
         activeLineColor: 0xbfe5f4,
         //地图的厚度
         deep: 5.5,
+        //柱体最大高度
+        barheightmax: 30,
+        //柱体最小高度
+        barheightmin: 8,
         //地图侧边的贴图
         sideTexture: sideTexture,
         //地图光柱的贴图
@@ -85,10 +89,8 @@ export default class GeoWorld {
         guangquan01: this.resources.textures.guangquan01,
         //地图光圈贴图2
         guangquan02: this.resources.textures.guangquan02,
-        //柱体最大高度
-        barheightmax: 30,
-        //柱体最小高度
-        barheightmin: 8
+        //重点标注的贴图
+        pointTexture: this.resources.textures.point,
       }
       this.createMap();
     })

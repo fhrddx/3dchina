@@ -72,12 +72,13 @@ type mapOptions = {
   activeSideColor: number,
   activeLineColor: number,
   deep: number,
+  barheightmax: number,
+  barheightmin: number,
   sideTexture: Texture,
   huiguangTexture: Texture,
   guangquan01: Texture,
   guangquan02: Texture,
-  barheightmax: number,
-  barheightmin: number
+  pointTexture: Texture,
 }
 
 export default punctuation;
