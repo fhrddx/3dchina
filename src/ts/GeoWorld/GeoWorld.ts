@@ -1,4 +1,4 @@
-import { AxesHelper, Intersection, PerspectiveCamera, Raycaster, RepeatWrapping, Scene, Vector2, WebGLRenderer } from "three";
+import { AxesHelper, Intersection, Object3D, PerspectiveCamera, Raycaster, RepeatWrapping, Scene, Vector2, WebGLRenderer } from "three";
 import { IGeoWorld } from "../interfaces/IGeoWorld";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Sizes from "../Utils/Sizes";
@@ -29,6 +29,10 @@ export default class GeoWorld {
   private currentHoverMesh: Intersection;
   //资源加载器
   private resources: Resources;
+  //可以hover的mesh
+  private hoverMeshs: Object3D[];
+  //可以点击的meshs
+  private clickMeshs: Object3D[];
   
   constructor(option: IGeoWorld) {
     this.option = option;
@@ -101,6 +105,8 @@ export default class GeoWorld {
     const map = new GeoMap(this.mapStyle);
     map.create();
     this.scene.add(map.group);
+    this.hoverMeshs = map.hoverMeshs;
+    this.clickMeshs = map.clickMesh;
     //隐藏loading
     const loading = document.querySelector('#loading')
     loading.classList.add('out');
@@ -146,8 +152,8 @@ export default class GeoWorld {
     //每一帧都发一次射线，并获取射线拾取到的物体
     this.raycaster.setFromCamera(this.mouse, this.camera);
     const intersects = this.raycaster.intersectObjects(
-      //注意，这里的 scene.children 范围太广，可以适当的减少下范围 -------------------------这个代码有待优化，因为这个集合太广
-      this.scene.children,
+      //注意，这里的 scene.children 范围太广，可以适当的减少下范围
+      this.hoverMeshs,
       true
     );
     //没有拾取到任何物体，直接返回

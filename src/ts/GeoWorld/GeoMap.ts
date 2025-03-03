@@ -1,4 +1,4 @@
-import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, FrontSide, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, PlaneGeometry, RepeatWrapping, Shape, Sprite, SpriteMaterial, sRGBEncoding, Vector3 } from 'three';
+import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, FrontSide, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shape, Sprite, SpriteMaterial, sRGBEncoding, Vector3 } from 'three';
 import ChinaGeoJson from '../../json/ChinaGeoJson.json';
 import * as d3 from'd3-geo'; 
 import { mapOptions, pointItem, saleItem } from '../types';
@@ -8,6 +8,8 @@ import points from './ImportantPoints';
 
 export default class GeoMap {
   public group: Group;
+  public hoverMeshs: Object3D[];
+  public clickMesh: Object3D[];
   private mapStyle: mapOptions;
   private projection: (array: number[]) => number[];
 
@@ -30,6 +32,8 @@ export default class GeoMap {
     if(!hasData){
       return;
     }
+    this.clickMesh = [];
+    this.hoverMeshs = [];
     //遍历所有的省
     ChinaGeoJson.features.forEach(provinceObject => {
       //每个省创建一个组合
@@ -106,6 +110,8 @@ export default class GeoMap {
         sideMaterial.needsUpdate = true;
         const mesh = new Mesh(geometry, [material, sideMaterial]);
         mesh.name = 'province_mesh';
+        this.hoverMeshs.push(mesh);
+        this.clickMesh.push(mesh);
         //最后加入各个组合中
         provinceGroup.add(line);
         provinceGroup.add(mesh);
@@ -164,6 +170,7 @@ export default class GeoMap {
     const lights = this.createBarLights(barHeight, 0xfffef4);
     areaBar.add(...lights);
     this.group.add(areaBar);
+    this.hoverMeshs.push(areaBar);
   }
 
   //柱体内部，加上几个平面
@@ -283,6 +290,8 @@ export default class GeoMap {
         value: p.count
       };
       this.group.add(sprite);
+      this.hoverMeshs.push(sprite);
+      this.clickMesh.push(sprite);
     })
   }
 
