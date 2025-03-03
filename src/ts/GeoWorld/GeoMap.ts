@@ -275,6 +275,11 @@ export default class GeoMap {
       const [x, y] = this.projection(p.center);
       sprite.scale.set(size, size, size);
       sprite.position.set(x, -y, this.mapStyle.deep + size / 3);
+      sprite.name = 'province_point';
+      sprite.userData['properties'] = {
+        name: p.province,
+        value: p.count
+      };
       this.group.add(sprite);
     })
   }
