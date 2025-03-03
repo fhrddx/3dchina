@@ -159,7 +159,7 @@ export default class GeoWorld {
       return;
     }
     //筛选出拾取到的第一个物体
-    const hoverMesh = intersects.find(i => i.object.name === 'province_mesh' || i.object.name === 'province_bar');
+    const hoverMesh = intersects.find(i => i.object.name === 'province_mesh' || i.object.name === 'province_bar' || i.object.name === 'province_point');
     if(!hoverMesh){
       return;
     }
@@ -229,6 +229,16 @@ export default class GeoWorld {
       const meshInfo = this.currentHoverMesh.object.userData['properties'];
       this.tooltip.innerHTML = `
        <div>${meshInfo.name}销售额&nbsp;&nbsp;<div>
+       <div>${meshInfo.value} 万元<div>
+      `;
+      this.tooltip.style.visibility = 'visible';
+      return;
+    }
+    //如果hover是重要点位
+    if(currentHoverMeshName === 'province_point'){
+      const meshInfo = this.currentHoverMesh.object.userData['properties'];
+      this.tooltip.innerHTML = `
+       <div>${meshInfo.name} &nbsp;&nbsp;<div>
        <div>${meshInfo.value} 万元<div>
       `;
       this.tooltip.style.visibility = 'visible';
