@@ -243,7 +243,9 @@ export default class GeoMap {
     const label = new CSS3DObject(tag);
     label.scale.set(0.1, 0.1, 0.1);
     label.rotation.x = Math.PI / 2;
-    label.position.set(x, y, z + barHeight);
+    label.position.set(x, y, z);
+    label.translateX(11.5);
+    label.translateY(barHeight + 3.5);
     label.name = 'province_brand';
     label.userData['properties'] = {
       name: item.province,
