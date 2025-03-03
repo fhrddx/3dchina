@@ -38,20 +38,40 @@ export default class GeoMap {
       const allCircles = provinceObject.geometry.coordinates;
       //再遍历每一个圈
       allCircles.forEach(oneCircle => {
+        //geo的数据嵌套非常复杂，圈里面可能还嵌套其他圈，需要额外再保存，再遍历
+        const extraCircles = [];
         //准备生成一个不规则的平面
         const shape = new Shape();
         //准备画出一条不规则的线
         const vertices = [];
         //每个圈的所有的点，都遍历一次，每个点都是包含2个数字的数组
         for (let i = 0; i < oneCircle.length; i++) {
-          const [x, y] = this.projection(oneCircle[i]);
-          //这里存在着一个很严重的问题，那就是geojson数据可能本身有问题，导致投影了之后，出现 NAN 的值，需要具体查下是什么原因？？？？
-          if(!isNaN(x) && !isNaN(y)){
+          const length = oneCircle[i].length;
+          if(length === 2){
+            const [x, y] = this.projection(oneCircle[i]);
             if (i === 0) {
               shape.moveTo(x, -y);
             }
             shape.lineTo(x, -y);
             vertices.push(x, -y, this.mapStyle.deep);
+          }else{
+            extraCircles.push(oneCircle[i]);
+          }
+        }
+        //遍历一下圈中圈（类似中国的河北省，就是圈中圈的情况）
+        for (let i = 0; i < extraCircles.length; i++) {
+          const everyCircle = extraCircles[i];
+          //每个圈的所有的点，都遍历一次，每个点都是包含2个数字的数组
+          for (let i = 0; i < everyCircle.length; i++) {
+            const length = everyCircle[i].length;
+            if(length === 2){
+              const [x, y] = this.projection(everyCircle[i]);
+              if (i === 0) {
+                shape.moveTo(x, -y);
+              }
+              shape.lineTo(x, -y);
+              vertices.push(x, -y, this.mapStyle.deep);
+            }
           }
         }
         //生成线条
