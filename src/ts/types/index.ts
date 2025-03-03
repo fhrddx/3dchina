@@ -1,5 +1,11 @@
 import { Color, Texture } from "three"
 
+type pointItem = {
+  province: string,
+  count: number,
+  center: number[]
+}
+
 type saleItem = {
   province: string,
   provinceEn: string,
@@ -82,4 +88,4 @@ type mapOptions = {
 }
 
 export default punctuation;
-export { earthOptions,  uniforms, mapOptions, saleItem };
+export { earthOptions,  uniforms, mapOptions, saleItem, pointItem };
