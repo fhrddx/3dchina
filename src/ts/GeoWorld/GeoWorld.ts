@@ -70,7 +70,7 @@ export default class GeoWorld {
         //地图边界线的颜色
         lineColor: 0xbfe5f4,
         //hover时地图表面的颜色
-        activePlaneColor: 0x94c8e3,
+        activePlaneColor: 0x92cce4,
         //hover时地图侧边的颜色
         activeSideColor: 0x094869,
         //hover时地图边界线的颜色
