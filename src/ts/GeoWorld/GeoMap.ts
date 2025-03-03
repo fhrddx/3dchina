@@ -131,6 +131,8 @@ export default class GeoMap {
       this.createQuan(x, -y, this.mapStyle.deep + 0.4);
       this.createLabel(item, x, -y, this.mapStyle.deep, barHeight);
     })
+    //重点标注
+    this.createPoints();
   }
 
   //创建光柱
@@ -253,5 +255,10 @@ export default class GeoMap {
       value: item.count
     }
     this.group.add(label);
+  }
+
+  //添加重点标注的地方
+  createPoints(){
+
   }
 }
