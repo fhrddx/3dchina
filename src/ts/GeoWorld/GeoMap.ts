@@ -362,10 +362,10 @@ export default class GeoMap {
   tick(){
     this.tickNumber = (this.tickNumber + 1) % 360000;
     if(this.bigCirclePlane){
-      this.bigCirclePlane.rotation.z += 0.008;
+      this.bigCirclePlane.rotation.z += 0.01;
     }
     if(this.smallCirclePlane){
-      this.smallCirclePlane.rotation.z -= 0.005;
+      this.smallCirclePlane.rotation.z -= 0.008;
     }
     if(this.animatedPoints && this.animatedPoints.length > 0){
       this.animatedPoints.forEach(mesh => {
@@ -374,7 +374,7 @@ export default class GeoMap {
         }
         const height = mesh.userData['height'] + Math.sin(this.tickNumber * 0.1);
         mesh.userData['height'] = height;
-        mesh.position.setZ(height * 0.25 + this.mapStyle.deep);
+        mesh.position.setZ(height * 0.2 + this.mapStyle.deep);
       })
     }
   }
