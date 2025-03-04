@@ -97,6 +97,10 @@ export default class GeoWorld {
         guangquan02: this.resources.textures.guangquan02,
         //重点标注的贴图
         pointTexture: this.resources.textures.point,
+        //大圈1
+        rotationBorder1: this.resources.textures.rotationBorder1,
+        //大圈2
+        rotationBorder2: this.resources.textures.rotationBorder2
       }
       this.createMap();
     })

@@ -85,6 +85,8 @@ type mapOptions = {
   guangquan01: Texture,
   guangquan02: Texture,
   pointTexture: Texture,
+  rotationBorder1: Texture,
+  rotationBorder2: Texture,
 }
 
 export default punctuation;
