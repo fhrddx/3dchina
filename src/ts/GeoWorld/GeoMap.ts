@@ -344,8 +344,9 @@ export default class GeoMap {
     })
     const mesh1 = new Mesh(plane1, material1);
     mesh1.translateZ(-1);
+    mesh1.translateX(10);
     this.group.add(mesh1);
-    this.bigCirclePlane = mesh1;
+    this.bigCirclePlane = mesh1; 
     //创建第二个大圆环
     const radiu2 = 110;
     const plane2 = new PlaneGeometry(radiu2, radiu2);
@@ -360,6 +361,7 @@ export default class GeoMap {
     })
     const mesh2 = new Mesh(plane2, material2);
     mesh2.translateZ(-1);
+    mesh2.translateX(10);
     this.group.add(mesh2);
     this.smallCirclePlane = mesh2;
   }
