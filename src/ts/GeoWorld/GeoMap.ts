@@ -15,6 +15,7 @@ export default class GeoMap {
   private bigCirclePlane: Object3D;
   private smallCirclePlane: Object3D;
   private animatedPoints: Object3D[];
+  private barCircles: Object3D[];
   private tickNumber: number;
 
   constructor(mapStyleOption: mapOptions){
@@ -31,6 +32,7 @@ export default class GeoMap {
     //每一帧的标识
     this.tickNumber = 0;
     this.animatedPoints = [];
+    this.barCircles = [];
   }
 
   //创建地图
@@ -138,11 +140,12 @@ export default class GeoMap {
         min = count;
       }
     })
-    saleList.forEach((item: saleItem) => {
+    saleList.forEach((item: saleItem, index: number) => {
+      console.log(index)
       const barHeight = this.mapStyle.barheightmin + Math.floor((item.count - min) / (max - min) * (this.mapStyle.barheightmax - this.mapStyle.barheightmin));
       const [x, y] = this.projection(item.center);
       this.createBar(item, x, -y, this.mapStyle.deep + 0.3, barHeight);
-      this.createQuan(x, -y, this.mapStyle.deep + 0.4);
+      this.createQuan(x, -y, this.mapStyle.deep + 0.4, (index % 3 === 0));
       this.createLabel(item, x, -y, this.mapStyle.deep, barHeight);
     })
     //重点标注
@@ -206,7 +209,7 @@ export default class GeoMap {
   }
 
   //在柱体的底部加上光圈
-  createQuan(x: number, y: number, z: number) {
+  createQuan(x: number, y: number, z: number, animated: boolean) {
     const position = new Vector3(x, y, z);
     const guangquan1 = this.mapStyle.guangquan01;
     const guangquan2 = this.mapStyle.guangquan02;
@@ -241,6 +244,9 @@ export default class GeoMap {
     const quanGroup = new Group();
     quanGroup.add(mesh1, mesh2);
     this.group.add(quanGroup);
+    if(animated){
+      this.barCircles.push(mesh1);
+    }
   }
 
   //加上label标签
@@ -375,6 +381,11 @@ export default class GeoMap {
         const height = mesh.userData['height'] + Math.sin(this.tickNumber * 0.1);
         mesh.userData['height'] = height;
         mesh.position.setZ(height * 0.2 + this.mapStyle.deep);
+      })
+    }
+    if(this.barCircles && this.barCircles.length > 0){
+      this.barCircles.forEach(circle => {
+        circle.rotation.z += 0.08;
       })
     }
   }
