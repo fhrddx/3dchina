@@ -14,6 +14,8 @@ export default class GeoMap {
   private projection: (array: number[]) => number[];
   private bigCirclePlane: Object3D;
   private smallCirclePlane: Object3D;
+  private animatedPoints: Object3D[];
+  private tickNumber: number;
 
   constructor(mapStyleOption: mapOptions){
     this.mapStyle = mapStyleOption;
@@ -26,6 +28,9 @@ export default class GeoMap {
     texture.encoding = sRGBEncoding;
     texture.wrapS = RepeatWrapping;
     texture.wrapT = RepeatWrapping;
+    //每一帧的标识
+    this.tickNumber = 0;
+    this.animatedPoints = [];
   }
 
   //创建地图
@@ -296,6 +301,7 @@ export default class GeoMap {
       this.group.add(sprite);
       this.hoverMeshs.push(sprite);
       this.clickMesh.push(sprite);
+      this.animatedPoints.push(sprite);
     })
   }
 
@@ -354,11 +360,22 @@ export default class GeoMap {
 
   //每一帧更新下动画
   tick(){
+    this.tickNumber = (this.tickNumber + 1) % 360000;
     if(this.bigCirclePlane){
       this.bigCirclePlane.rotation.z += 0.008;
     }
     if(this.smallCirclePlane){
       this.smallCirclePlane.rotation.z -= 0.005;
+    }
+    if(this.animatedPoints && this.animatedPoints.length > 0){
+      this.animatedPoints.forEach(mesh => {
+        if(!mesh.userData['height']){
+          mesh.userData['height'] = 0;
+        }
+        const height = mesh.userData['height'] + Math.sin(this.tickNumber * 0.1);
+        mesh.userData['height'] = height;
+        mesh.position.setZ(height * 0.25 + this.mapStyle.deep);
+      })
     }
   }
 }
