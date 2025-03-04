@@ -35,6 +35,8 @@ export default class GeoWorld {
   private hoverMeshs: Object3D[];
   //可以点击的meshs
   private clickMeshs: Object3D[];
+  //最终创建的地图
+  private map: GeoMap;
   
   constructor(option: IGeoWorld) {
     this.option = option;
@@ -113,6 +115,7 @@ export default class GeoWorld {
     this.scene.add(map.group);
     this.hoverMeshs = map.hoverMeshs;
     this.clickMeshs = map.clickMesh;
+    this.map = map;
     //隐藏loading
     const loading = document.querySelector('#loading')
     loading.classList.add('out');
@@ -154,6 +157,7 @@ export default class GeoWorld {
     this.css3DRenderer.render(this.scene, this.camera);
     this.controls && this.controls.update();
     this.raycasterEvent();
+    this.map && this.map.tick();
   }
 
   //处理一下相关事件 

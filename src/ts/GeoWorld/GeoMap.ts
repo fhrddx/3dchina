@@ -12,6 +12,8 @@ export default class GeoMap {
   public clickMesh: Object3D[];
   private mapStyle: mapOptions;
   private projection: (array: number[]) => number[];
+  private bigCirclePlane: Object3D;
+  private smallCirclePlane: Object3D;
 
   constructor(mapStyleOption: mapOptions){
     this.mapStyle = mapStyleOption;
@@ -317,7 +319,7 @@ export default class GeoMap {
   //创建底部的大圆环
   createCirclePlane(){
     //创建第一个大圆环
-    const radius1 = 140;
+    const radius1 = 130;
     const plane1 = new PlaneGeometry(radius1, radius1);
     const material1 = new MeshBasicMaterial({
       map: this.mapStyle.rotationBorder1,
@@ -331,8 +333,9 @@ export default class GeoMap {
     const mesh1 = new Mesh(plane1, material1);
     mesh1.translateZ(-1);
     this.group.add(mesh1);
+    this.bigCirclePlane = mesh1;
     //创建第二个大圆环
-    const radiu2 = 130;
+    const radiu2 = 110;
     const plane2 = new PlaneGeometry(radiu2, radiu2);
     const material2 = new MeshBasicMaterial({
       map: this.mapStyle.rotationBorder2,
@@ -346,5 +349,16 @@ export default class GeoMap {
     const mesh2 = new Mesh(plane2, material2);
     mesh2.translateZ(-1);
     this.group.add(mesh2);
+    this.smallCirclePlane = mesh2;
+  }
+
+  //每一帧更新下动画
+  tick(){
+    if(this.bigCirclePlane){
+      this.bigCirclePlane.rotation.z += 0.008;
+    }
+    if(this.smallCirclePlane){
+      this.smallCirclePlane.rotation.z -= 0.005;
+    }
   }
 }
