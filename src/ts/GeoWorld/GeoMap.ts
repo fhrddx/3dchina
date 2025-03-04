@@ -1,4 +1,4 @@
-import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, FrontSide, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shape, Sprite, SpriteMaterial, sRGBEncoding, Vector3 } from 'three';
+import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shape, Sprite, SpriteMaterial, sRGBEncoding, Vector3 } from 'three';
 import ChinaGeoJson from '../../json/ChinaGeoJson.json';
 import * as d3 from'd3-geo'; 
 import { mapOptions, pointItem, saleItem } from '../types';
@@ -142,6 +142,8 @@ export default class GeoMap {
     this.createPoints();
     //标注下牌匾
     this.createWall();
+    //创建底部的大圆环
+    this.createCirclePlane();
   }
 
   //创建光柱
@@ -310,5 +312,37 @@ export default class GeoMap {
     label.rotation.x = Math.PI / 2;
     label.position.set(15, -68, 2);
     this.group.add(label);
+  }
+
+  //创建底部的大圆环
+  createCirclePlane(){
+    //创建第一个大圆环
+    const radius1 = 140;
+    const plane1 = new PlaneGeometry(radius1, radius1);
+    const material1 = new MeshBasicMaterial({
+      map: this.mapStyle.rotationBorder1,
+      color: 0x2aa8ac,
+      transparent: true,
+      opacity: 0.2,
+      side: DoubleSide,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    })
+    const mesh1 = new Mesh(plane1, material1);
+    this.group.add(mesh1);
+    //创建第二个大圆环
+    const radiu2 = 130;
+    const plane2 = new PlaneGeometry(radiu2, radiu2);
+    const material2 = new MeshBasicMaterial({
+      map: this.mapStyle.rotationBorder2,
+      color: 0x2aa8ac,
+      transparent: true,
+      opacity: 0.2,
+      side: DoubleSide,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    })
+    const mesh2 = new Mesh(plane2, material2);
+    this.group.add(mesh2);
   }
 }
