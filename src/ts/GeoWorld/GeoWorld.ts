@@ -47,8 +47,8 @@ export default class GeoWorld {
     this.css3DRenderer = basic.css3DRenderer;
     this.controls = basic.controls;
     //加上辅助线，试一下（红色X轴，绿色Y轴，蓝色Z轴）
-    const axesHelper = new AxesHelper(200);
-    this.scene.add(axesHelper);
+    //const axesHelper = new AxesHelper(200);
+    //this.scene.add(axesHelper);
     //监听可视范围的尺寸
     this.sizes = new Sizes({ dom: option.dom })
     this.sizes.$on('resize', () => {
