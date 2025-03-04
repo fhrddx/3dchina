@@ -329,6 +329,7 @@ export default class GeoMap {
       blending: AdditiveBlending,
     })
     const mesh1 = new Mesh(plane1, material1);
+    mesh1.translateZ(-1);
     this.group.add(mesh1);
     //创建第二个大圆环
     const radiu2 = 130;
@@ -343,6 +344,7 @@ export default class GeoMap {
       blending: AdditiveBlending,
     })
     const mesh2 = new Mesh(plane2, material2);
+    mesh2.translateZ(-1);
     this.group.add(mesh2);
   }
 }
