@@ -141,7 +141,6 @@ export default class GeoMap {
       }
     })
     saleList.forEach((item: saleItem, index: number) => {
-      console.log(index)
       const barHeight = this.mapStyle.barheightmin + Math.floor((item.count - min) / (max - min) * (this.mapStyle.barheightmax - this.mapStyle.barheightmin));
       const [x, y] = this.projection(item.center);
       this.createBar(item, x, -y, this.mapStyle.deep + 0.3, barHeight);
