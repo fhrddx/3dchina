@@ -1,4 +1,4 @@
-import { AxesHelper, Intersection, Object3D, PerspectiveCamera, Raycaster, RepeatWrapping, Scene, Vector2, WebGLRenderer } from "three";
+import { AxesHelper, Intersection, Mesh, Object3D, PerspectiveCamera, Raycaster, RepeatWrapping, Scene, Vector2, WebGLRenderer } from "three";
 import { IGeoWorld } from "../interfaces/IGeoWorld";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Sizes from "../Utils/Sizes";
@@ -212,8 +212,7 @@ export default class GeoWorld {
       //处理上一次hover的物体，恢复其颜色等样式
       const lastHoverMeshName = this.currentHoverMesh.object.name;
       if(lastHoverMeshName === 'province_mesh'){
-        //@ts-ignore
-        this.currentHoverMesh.object.material[0].color.set(this.mapStyle.planeColor);
+        (this.currentHoverMesh.object as Mesh).material[0].color.set(this.mapStyle.planeColor);
       }
     }
     //重新赋值当前hover对象
@@ -223,8 +222,7 @@ export default class GeoWorld {
     //显示浮层
     this.showTip();
     if(currentHoverMeshName === 'province_mesh'){
-      //@ts-ignore
-      this.currentHoverMesh.object.material[0].color.set(this.mapStyle.activePlaneColor);
+      (this.currentHoverMesh.object as Mesh).material[0].color.set(this.mapStyle.activePlaneColor);
     }
   }
 
@@ -234,8 +232,7 @@ export default class GeoWorld {
       return;
     }
     if(this.currentHoverMesh.object.name === 'province_mesh'){
-      //@ts-ignore
-      this.currentHoverMesh.object.material[0].color.set(this.mapStyle.planeColor);
+      (this.currentHoverMesh.object as Mesh).material[0].color.set(this.mapStyle.planeColor);
     }
     this.currentHoverMesh = null;
     this.tooltip.style.visibility = 'hidden';
