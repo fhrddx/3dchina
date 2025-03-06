@@ -233,8 +233,10 @@ export default class GeoWorld {
     if(!this.currentHoverMesh){
       return;
     }
-    //@ts-ignore
-    this.currentHoverMesh.object.material[0].color.set(this.mapStyle.planeColor);
+    if(this.currentHoverMesh.object.name === 'province_mesh'){
+      //@ts-ignore
+      this.currentHoverMesh.object.material[0].color.set(this.mapStyle.planeColor);
+    }
     this.currentHoverMesh = null;
     this.tooltip.style.visibility = 'hidden';
   }
