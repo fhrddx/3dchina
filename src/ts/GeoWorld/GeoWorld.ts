@@ -37,6 +37,9 @@ export default class GeoWorld {
   private clickMeshs: Object3D[];
   //最终创建的地图
   private map: GeoMap;
+  //判断是否拖拽
+  private startClientX: number;
+  private startClientY: number;
   
   constructor(option: IGeoWorld) {
     this.option = option;
@@ -138,12 +141,22 @@ export default class GeoWorld {
       this.mouse.x = x;
       this.mouse.y = y;
       //更改div位置
-      this.tooltip.style.left = e.clientX + 20 + 'px'
-      this.tooltip.style.top = e.clientY + 5 + 'px'
+      this.tooltip.style.left = e.clientX + 20 + 'px';
+      this.tooltip.style.top = e.clientY + 5 + 'px';
     })
     //注册一下点击事件
     this.clickRaycaster = new Raycaster();
-    this.css3DRenderer.domElement.addEventListener('click', e => {
+    //注意一下：点击事件，直接用 click 很难区分拖拽和点击，所以结合 mousedown 和 mouseup 一起来实现
+    this.css3DRenderer.domElement.addEventListener('mousedown', e => {
+      this.startClientX = e.clientX;
+      this.startClientY = e.clientY;
+    })
+    this.css3DRenderer.domElement.addEventListener('mouseup', e => {
+      const distant = Math.abs(e.clientX - this.startClientX) + Math.abs(e.clientY - this.startClientY);
+      //距离太长，应该就是拖拽，这时候不执行点击事件
+      if(distant > 2){
+        return;
+      }
       const x = e.clientX / window.innerWidth * 2 - 1;
       const y = -1 * (e.clientY / window.innerHeight) * 2 + 1;
       this.click(x, y);
