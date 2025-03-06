@@ -129,8 +129,8 @@ export default class GeoMap {
       });
     });
     //遍历所有的销售数据
-    let max: number = 0;
-    let min: number = 0;
+    let max = 0;
+    let min = 0;
     saleList.forEach((item: saleItem) => {
       const count = item.count;
       if(count > max){
