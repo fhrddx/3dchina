@@ -1,4 +1,4 @@
-import { CatmullRomCurve3, DoubleSide, Group, Mesh, MeshBasicMaterial, PlaneBufferGeometry, Texture, TubeGeometry, Vector3 } from "three";
+import { Box3, CatmullRomCurve3, DoubleSide, Group, Mesh, MeshBasicMaterial, PlaneBufferGeometry, Texture, TubeGeometry, Vector3 } from "three";
 import punctuation from "../types";
 
 //注解：光柱底座矩形平面
@@ -155,4 +155,66 @@ export const createAnimateLine = (option) => {
     option.radialSegments
   );
   return new Mesh(tubeGeometry, option.material);
+}
+
+/**
+ * 获取网格的包围盒
+ * @param {Object3D} group 网格对象
+ * @returns
+ */
+export function getBoundBox(group) {
+  //计算实际宽高
+  const size = new Vector3()
+  //包围盒计算模型对象的大小和位置
+  const box3 = new Box3()
+  //计算模型包围盒
+  box3.expandByObject(group) 
+  const boxSize = new Vector3()
+  //计算包围盒尺寸
+  box3.getSize(boxSize) 
+  const center = new Vector3()
+  //计算一个层级模型对应包围盒的几何体中心坐标
+  box3.getCenter(center) 
+  const obj = {
+    box3,
+    boxSize,
+    center,
+    size
+  }
+  if (group.geometry) {
+    group.geometry.computeBoundingBox()
+    group.geometry.computeBoundingSphere()
+    const { max, min } = group.geometry.boundingBox
+    size.x = max.x - min.x
+    size.y = max.y - min.y
+    size.z = max.z - min.z
+    obj.size = size
+  }
+  return obj
+}
+
+//获取地理geojson的范围
+export function getGeoJSONBounds(geojson) {
+  let minLng = 180, maxLng = -180, minLat = 90, maxLat = -90;
+
+  function processCoordinates(coords) {
+    coords.forEach(coord => {
+      if (Array.isArray(coord[0])) {
+        //递归处理嵌套数组
+        processCoordinates(coord);
+      } else {
+        const [lng, lat] = coord;
+        minLng = Math.min(minLng, lng);
+        maxLng = Math.max(maxLng, lng);
+        minLat = Math.min(minLat, lat);
+        maxLat = Math.max(maxLat, lat);
+      }
+    });
+  }
+
+  geojson.features.forEach(feature => {
+    processCoordinates(feature.geometry.coordinates);
+  });
+
+  return [[minLng, minLat], [maxLng, maxLat]];
 }

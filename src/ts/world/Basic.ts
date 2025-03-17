@@ -65,7 +65,7 @@ export class Basic {
     //设置相机距离原点的最近距离（如果想要放大，这个值可以缩小）
     this.controls.minDistance = 100;
     //设置相机距离原点的最远距离（如果想要缩小，这个值可以放大）
-    this.controls.maxDistance = 300;
+    this.controls.maxDistance = 400;
     //是否开启右键拖拽（设置为true时，动画效果不好控制，所以还是不要右键操作了）
     this.controls.enablePan = false;
   }

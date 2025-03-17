@@ -30,7 +30,8 @@ const fileSuffix = [
   'guangquan02',
   'point',
   'rotationBorder1',
-  'rotationBorder2'
+  'rotationBorder2',
+  'pathLine'
 ]
 
 const textures = fileSuffix.map(item => {

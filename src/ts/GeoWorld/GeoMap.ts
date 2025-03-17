@@ -1,29 +1,33 @@
-import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shape, Sprite, SpriteMaterial, sRGBEncoding, Vector3 } from 'three';
+import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CatmullRomCurve3, Color, DoubleSide, ExtrudeGeometry, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Object3D, PlaneGeometry, RepeatWrapping, Shape, Sprite, SpriteMaterial, sRGBEncoding, TubeGeometry, Vector3 } from 'three';
 import ChinaGeoJson from '../../json/ChinaGeoJson.json';
+import ChinaOutlineJson from '../../json/ChinaOutline.json';
 import * as d3 from'd3-geo'; 
-import { mapOptions, pointItem, saleItem } from '../types';
+import { mapInfo, mapOptions, mapSizeConfig, pointItem, saleItem } from '../types';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
 import saleList from './TestData';
 import points from './ImportantPoints';
-
+import axios from 'axios';
+import { getGeoJSONBounds } from '../Utils/common';
 export default class GeoMap {
   public group: Group;
   public hoverMeshs: Object3D[];
-  public clickMesh: Object3D[];
+  public clickMeshs: Object3D[];
+
   private mapStyle: mapOptions;
+  private config: mapSizeConfig;
   private projection: (array: number[]) => number[];
   private bigCirclePlane: Object3D;
   private smallCirclePlane: Object3D;
   private animatedPoints: Object3D[];
   private barCircles: Object3D[];
   private tickNumber: number;
+  private stopTick: boolean;
+  private currentMap: mapInfo;
 
   constructor(mapStyleOption: mapOptions){
     this.mapStyle = mapStyleOption;
     this.group = new Group();
     this.group.name = 'map_group';
-    //经纬度投影转化函数
-    this.projection = d3.geoMercator().center([104.0, 37.5]).translate([0, 0]);
     //设置下贴图的属性
     const texture = this.mapStyle.huiguangTexture;
     texture.encoding = sRGBEncoding;
@@ -33,18 +37,175 @@ export default class GeoMap {
     this.tickNumber = 0;
     this.animatedPoints = [];
     this.barCircles = [];
+    //判断是否停止渲染
+    this.stopTick = true;
   }
 
-  //创建地图
+  //创建全中国的地图，非首次执行，需要先执行dispose
   create(){
-    const hasData = ChinaGeoJson && ChinaGeoJson.features && ChinaGeoJson.features.length > 0;
+    //初始化层级列表
+    const chinaData = {
+      code: 100000,
+      name: '中国',
+      center: [104.0, 37.5]
+    };
+    localStorage.setItem('china_map_list', JSON.stringify([chinaData]));
+    //基本的地图
+    this.currentMap = chinaData;
+    const range = d3.geoBounds(ChinaGeoJson);
+    //将配置收藏起来
+    this.config = {
+      jindu: range[1][0] - range[0][0],
+      weidu: range[1][1]- range[0][1],
+      scale: 150
+    };
+    //计算出中心
+    const center = [(range[1][0] + range[0][0]) / 2, (range[1][1] + range[0][1]) / 2];
+    //经纬度投影转化函数
+    this.projection = d3.geoMercator().center(center).scale(this.config.scale).translate([0, 0]);
+    //保留下需要更新的物体
+    this.hoverMeshs = [];
+    this.clickMeshs = [];
+    //画出地图形状
+    this.createMapByGeoJson(ChinaGeoJson);
+    //遍历所有的销售数据
+    let max = 0;
+    let min = 0;
+    saleList.forEach((item: saleItem) => {
+      const count = item.count;
+      if(count > max){
+        max = count;
+      }
+      if(count < min){
+        min = count;
+      }
+    })
+    saleList.forEach((item: saleItem) => {
+      const barHeight = this.mapStyle.barheightmin + Math.floor((item.count - min) / (max - min) * (this.mapStyle.barheightmax - this.mapStyle.barheightmin));
+      const [x, y] = this.projection(item.center);
+      this.createBar(item, x, -y, this.mapStyle.deep + 0.3, barHeight);
+      this.createQuan(x, -y, this.mapStyle.deep + 0.4, true);
+      this.createLabel(item, x, -y, this.mapStyle.deep, barHeight);
+    })
+    //重点标注
+    this.createPoints();
+    //标注下牌匾
+    this.createWall('中国','CHINA');
+    //创建底部的大圆环
+    this.createCirclePlane();
+    //创建外轮廓的流光特效
+    if(this.mapStyle.animatedPathLine){
+      this.createOutLine();
+    }
+    //开启渲染
+    this.stopTick = false;
+  }
+
+  //创建新的地图，注意：执行这个方法之前，需要先dispose
+  async changeMap(params: mapInfo){
+    if(!params){
+      return;
+    }
+    const { code, name } = params;
+    this.hoverMeshs = [];
+    this.clickMeshs = [];
+
+    let hasData = true;
+    let geojson = null;
+    try{
+      //获取geojson数据
+      const response = await axios.get(
+        `https://geo.datav.aliyun.com/areas_v3/bound/${params.code}_full.json`,
+      );
+      hasData = response && response.data;
+      geojson = response.data;
+    }catch(e){
+      hasData = false;
+    }
+    if(!hasData){
+      //这里做一下补救措施，即当接口调用失败的时候，恢复原来的数据（会闪一下，总比整个地图消失要好一点）
+      const historyList = JSON.parse(localStorage.getItem('china_map_list'));
+      if(historyList && historyList.length > 0){
+        if(historyList.length === 1){
+          this.create();
+        }else{
+          const lastItem = historyList.pop();
+          localStorage.setItem('china_map_list', JSON.stringify(historyList));
+          await this.changeMap(lastItem);
+          return;
+        }
+      }
+      return;
+    }
+
+    //根据geojson计算出放大尺寸
+    const range = getGeoJSONBounds(geojson);
+    const jindu = range[1][0] - range[0][0];
+    const weidu = range[1][1]- range[0][1];
+    const center = [(range[1][0] + range[0][0]) / 2, (range[1][1] + range[0][1]) / 2];
+    const scale = Math.min(this.config.jindu / jindu, this.config.weidu / weidu) * this.config.scale;
+    this.currentMap = {
+      code: code,
+      name: name,
+      center: center
+    };
+    this.projection = d3.geoMercator().center(center).scale(scale).translate([0, 0]);
+  
+    //绘制地图
+    this.createMapByGeoJson(geojson);
+    //创建底部的大圆环
+    this.createCirclePlane();
+
+    //创建柱状图
+    const currentSaleList = saleList.filter(p => name.indexOf(p.province) > -1);
+    if(currentSaleList && currentSaleList.length > 0){
+      //遍历所有的销售数据
+      let max = 0;
+      let min = 0;
+      currentSaleList.forEach((item: saleItem) => {
+        const count = item.count;
+        if(count > max){
+          max = count;
+        }
+        if(count < min){
+          min = count;
+        }
+      })
+      //画出柱状图
+      currentSaleList.forEach((item: saleItem, index: number) => {
+        const barHeight = this.mapStyle.barheightmin + Math.floor((item.count - min) / (max - min) * (this.mapStyle.barheightmax - this.mapStyle.barheightmin));
+        const [x, y] = this.projection(item.center);
+        this.createBar(item, x, -y, this.mapStyle.deep + 0.3, barHeight);
+        this.createQuan(x, -y, this.mapStyle.deep + 0.4, true);
+        this.createLabel(item, x, -y, this.mapStyle.deep, barHeight);
+      })
+    }
+
+    //更新一下历史数据
+    const historyList = JSON.parse(localStorage.getItem('china_map_list'));
+    if(historyList && historyList.length > 0){
+      localStorage.setItem('china_map_list', JSON.stringify([...historyList, params]))
+    }
+
+    //更新下牌匾
+    const length = historyList.length;
+    if(length > 0){
+      this.createWall(name, historyList[historyList.length - 1].name);
+    }
+    
+    //执行tick
+    this.stopTick = false;
+  }
+
+  //处理geojson数据
+  createMapByGeoJson(geoJson){
+    const hasData = geoJson && geoJson.features && geoJson.features.length > 0;
     if(!hasData){
       return;
     }
-    this.clickMesh = [];
-    this.hoverMeshs = [];
+    const isChina = this.currentMap.code === 100000;
     //遍历所有的省
-    ChinaGeoJson.features.forEach(provinceObject => {
+    geoJson.features.forEach(provinceObject => {
       //每个省创建一个组合
       const provinceGroup = new Group();
       provinceGroup.name = 'province_group';
@@ -120,39 +281,18 @@ export default class GeoMap {
         const mesh = new Mesh(geometry, [material, sideMaterial]);
         mesh.name = 'province_mesh';
         this.hoverMeshs.push(mesh);
-        this.clickMesh.push(mesh);
+        this.clickMeshs.push(mesh);
         //最后加入各个组合中
         provinceGroup.add(line);
         provinceGroup.add(mesh);
-        provinceGroup.userData['properties'] = provinceObject.properties;
+        provinceGroup.userData['properties'] = {
+          code: isChina ? 0 : provinceObject.properties.adcode,
+          name: provinceObject.properties.name,
+          center: isChina ? provinceObject.properties.cp : provinceObject.properties.centroid
+        };
         this.group.add(provinceGroup);
       });
     });
-    //遍历所有的销售数据
-    let max = 0;
-    let min = 0;
-    saleList.forEach((item: saleItem) => {
-      const count = item.count;
-      if(count > max){
-        max = count;
-      }
-      if(count < min){
-        min = count;
-      }
-    })
-    saleList.forEach((item: saleItem, index: number) => {
-      const barHeight = this.mapStyle.barheightmin + Math.floor((item.count - min) / (max - min) * (this.mapStyle.barheightmax - this.mapStyle.barheightmin));
-      const [x, y] = this.projection(item.center);
-      this.createBar(item, x, -y, this.mapStyle.deep + 0.3, barHeight);
-      this.createQuan(x, -y, this.mapStyle.deep + 0.4, (index % 3 === 0));
-      this.createLabel(item, x, -y, this.mapStyle.deep, barHeight);
-    })
-    //重点标注
-    this.createPoints();
-    //标注下牌匾
-    this.createWall();
-    //创建底部的大圆环
-    this.createCirclePlane();
   }
 
   //创建光柱
@@ -198,6 +338,7 @@ export default class GeoMap {
       blending: AdditiveBlending,
     });
     const mesh = new Mesh(geometry, material);
+    mesh.name = 'province_light';
     mesh.renderOrder = 10;
     mesh.rotateX(Math.PI / 2);
     const mesh2 = mesh.clone();
@@ -212,7 +353,7 @@ export default class GeoMap {
     const position = new Vector3(x, y, z);
     const guangquan1 = this.mapStyle.guangquan01;
     const guangquan2 = this.mapStyle.guangquan02;
-    const geometry = new PlaneGeometry(5, 5);
+    const geometry = new PlaneGeometry(4.5, 4.5);
     const material1 = new MeshBasicMaterial({
       color: 0xffffff,
       map: guangquan1,
@@ -236,7 +377,9 @@ export default class GeoMap {
       side: DoubleSide
     });
     const mesh1 = new Mesh(geometry, material1);
+    mesh1.name = 'province_quan1';
     const mesh2 = new Mesh(geometry, material2);
+    mesh2.name = 'province_quan2';
     mesh1.position.copy(position);
     mesh2.position.copy(position);
     mesh2.position.y -= 0.001;
@@ -305,16 +448,16 @@ export default class GeoMap {
       };
       this.group.add(sprite);
       this.hoverMeshs.push(sprite);
-      this.clickMesh.push(sprite);
+      this.clickMeshs.push(sprite);
       this.animatedPoints.push(sprite);
     })
   }
 
   //添加相关的牌匾
-  createWall(){
+  createWall(title: string, subTitle: string){
     const content = `
-      <div class="country-cn">中国</div>
-      <div class="country-en">CHINA</div>
+      <div class="country-cn">${title}</div>
+      <div class="country-en">${subTitle}</div>
     `;
     const tag = document.createElement("div");
     tag.innerHTML = content;
@@ -323,7 +466,8 @@ export default class GeoMap {
     const label = new CSS3DObject(tag);
     label.scale.set(0.1, 0.1, 0.1);
     label.rotation.x = Math.PI / 2;
-    label.position.set(15, -68, 2);
+    label.position.set(5, -68, 2);
+    label.name = 'province_wall';
     this.group.add(label);
   }
 
@@ -342,8 +486,8 @@ export default class GeoMap {
       blending: AdditiveBlending,
     })
     const mesh1 = new Mesh(plane1, material1);
+    mesh1.name = 'main_circle1';
     mesh1.translateZ(-1);
-    mesh1.translateX(10);
     this.group.add(mesh1);
     this.bigCirclePlane = mesh1; 
     //创建第二个大圆环
@@ -359,21 +503,54 @@ export default class GeoMap {
       blending: AdditiveBlending,
     })
     const mesh2 = new Mesh(plane2, material2);
+    mesh2.name = 'main_circle2';
     mesh2.translateZ(-1);
-    mesh2.translateX(10);
     this.group.add(mesh2);
     this.smallCirclePlane = mesh2;
   }
 
+  //创建外轮廓的流光动画特效
+  createOutLine(){
+    const pathPoint = [];
+    const pointList = ChinaOutlineJson.features[0].geometry.coordinates[0][0];
+    pointList.forEach(item => {
+      const [x, y] = this.projection(item);
+      pathPoint.push(new Vector3(x, -y, this.mapStyle.deep + 0.1));
+    })
+    const curve = new CatmullRomCurve3(pathPoint)
+    const tubeGeometry = new TubeGeometry(curve, 256 * 10, 0.28, 3, false);
+    const texture = this.mapStyle.pathLine;
+    texture.wrapS = texture.wrapT = RepeatWrapping
+    texture.repeat.set(2, 1);
+    const material = new MeshBasicMaterial({
+      color: 0x2bc4dc,
+      map: texture,
+      alphaMap: texture,
+      fog: false,
+      transparent: true,
+      opacity: 1,
+      blending: AdditiveBlending,
+    })
+    const mesh = new Mesh(tubeGeometry, material);
+    mesh.name = 'china_outline';
+    this.group.add(mesh);
+  }
+
   //每一帧更新下动画
   tick(){
+    if(this.stopTick){
+      return;
+    }
     this.tickNumber = (this.tickNumber + 1) % 360000;
+    //大圆圈转一下
     if(this.bigCirclePlane){
       this.bigCirclePlane.rotation.z += 0.01;
     }
+    //小圆圈转动一下
     if(this.smallCirclePlane){
       this.smallCirclePlane.rotation.z -= 0.008;
     }
+    //重要的icon标注跳动一下
     if(this.animatedPoints && this.animatedPoints.length > 0){
       this.animatedPoints.forEach(mesh => {
         if(!mesh.userData['height']){
@@ -384,10 +561,84 @@ export default class GeoMap {
         mesh.position.setZ(height * 0.2 + this.mapStyle.deep);
       })
     }
+    //柱状图下面的圈圈转一下
     if(this.barCircles && this.barCircles.length > 0){
       this.barCircles.forEach(circle => {
         circle.rotation.z += 0.08;
       })
     }
+    //地理边界线流光动画执行一下
+    if(this.mapStyle.animatedPathLine){
+      this.mapStyle.pathLine.offset.x += 0.005;
+    }
+  }
+
+  //清理数据
+  dispose(){
+    //停止tick
+    this.stopTick = true;
+    //group中每一个都销毁
+    this.group.traverse(child => {
+      this.disposeItem(child);
+    });
+    //hover列表中，每一个都销毁
+    this.hoverMeshs.forEach(child => {
+      this.disposeItem(child);
+    });
+    this.hoverMeshs = [];
+    //click列表中，每一个都销毁
+    this.clickMeshs.forEach(child => {
+      this.disposeItem(child);
+    });
+    this.clickMeshs = [];
+    //大圈销毁
+    this.disposeItem(this.bigCirclePlane);
+    this.bigCirclePlane = null;
+    //小圈销毁
+    this.disposeItem(this.smallCirclePlane);
+    this.smallCirclePlane = null;
+    //动态标注点销毁
+    this.animatedPoints.forEach(child => {
+      this.disposeItem(child);
+    });
+    this.animatedPoints = [];
+    //柱状图圈圈销毁
+    this.barCircles.forEach(child => {
+      this.disposeItem(child);
+    });
+    this.barCircles = [];
+    //生成新的空白group，等待加入物品
+    this.group = new Group();
+    this.group.name = 'map_group';
+  }
+
+  //清理某个3d物品
+  disposeItem(objectItem: Object3D){
+    if(!objectItem){
+      return;
+    }
+    //销毁所有的 Mesh、Sprite、Line
+    if (objectItem instanceof Mesh || objectItem instanceof Sprite || objectItem instanceof Line) {
+      if (objectItem.geometry){
+        objectItem.geometry.dispose();
+      } 
+      if (objectItem.material) {
+        if (Array.isArray(objectItem.material)) {
+          objectItem.material.forEach(mat => mat.dispose());
+        } else {
+          objectItem.material.dispose();
+        }
+      }
+    }
+    //销毁所有的 css3object
+    if(objectItem instanceof CSS3DObject){
+      if (objectItem.element && objectItem.element.parentNode) {
+        objectItem.element.parentNode.removeChild(objectItem.element);
+      }
+    }
+    if(objectItem.userData){
+      objectItem.userData = null;
+    }
+    objectItem = null;
   }
 }

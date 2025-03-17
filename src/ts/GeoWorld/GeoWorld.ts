@@ -1,12 +1,13 @@
-import { AxesHelper, Intersection, Mesh, Object3D, PerspectiveCamera, Raycaster, RepeatWrapping, Scene, Vector2, WebGLRenderer } from "three";
+import { AxesHelper, Intersection, Mesh, PerspectiveCamera, Raycaster, RepeatWrapping, Scene, Vector2, WebGLRenderer } from "three";
 import { IGeoWorld } from "../interfaces/IGeoWorld";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Sizes from "../Utils/Sizes";
 import { Basic } from "../world/Basic";
 import GeoMap from "./GeoMap";
-import { mapOptions } from "../types";
+import { mapInfo, mapOptions } from "../types";
 import { Resources } from "../world/Resources";
 import { CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
+import shortNameMap from "./ShortNameMap";
 
 export default class GeoWorld {
   //option 是外部传进来的，有属性：dom、回调函数callback
@@ -25,16 +26,13 @@ export default class GeoWorld {
   private raycaster: Raycaster;
   private mouse: Vector2;
   private tooltip: any;
+  private backbtn: any;
   //监听页面点击事件
   private clickRaycaster: Raycaster;
   //保留射线拾取的物体
   private currentHoverMesh: Intersection;
   //资源加载器
   private resources: Resources;
-  //可以hover的mesh
-  private hoverMeshs: Object3D[];
-  //可以点击的meshs
-  private clickMeshs: Object3D[];
   //最终创建的地图
   private map: GeoMap;
   //判断是否拖拽
@@ -43,11 +41,13 @@ export default class GeoWorld {
   
   constructor(option: IGeoWorld) {
     this.option = option;
+    this.tooltip = option.tooltip;
+    this.backbtn = option.backbtn;
     //通过Basic封装，生成 scene、camera、renderer、controls 这4个three.js最重要的概念
-    const basic = new Basic(this.option.dom);
+    const basic = new Basic(option.dom);
     this.scene = basic.scene;
     this.camera = basic.camera;
-    this.camera.position.set(0, -300, 250);
+    this.camera.position.set(0, -200, 250);
     this.renderer = basic.renderer;
     this.css3DRenderer = basic.css3DRenderer;
     this.controls = basic.controls;
@@ -75,19 +75,19 @@ export default class GeoWorld {
       //添加地图的参数配置
       this.mapStyle = {
         //地图表面的颜色
-        planeColor: 0x2d9bd8,
+        planeColor: 0x00659f,
         //地图侧边的颜色
         sideColor: 0x094869,
         //地图边界线的颜色
-        lineColor: 0xbfe5f4,
+        lineColor: 0x52b6cd,
         //hover时地图表面的颜色
-        activePlaneColor: 0x92cce4,
+        activePlaneColor: 0x36b2e9,
         //hover时地图侧边的颜色
         activeSideColor: 0x094869,
         //hover时地图边界线的颜色
         activeLineColor: 0xbfe5f4,
         //地图的厚度
-        deep: 5.5,
+        deep: 5,
         //柱体最大高度
         barheightmax: 30,
         //柱体最小高度
@@ -105,7 +105,11 @@ export default class GeoWorld {
         //大圈1
         rotationBorder1: this.resources.textures.rotationBorder1,
         //大圈2
-        rotationBorder2: this.resources.textures.rotationBorder2
+        rotationBorder2: this.resources.textures.rotationBorder2,
+        //轮廓描边的贴图
+        pathLine: this.resources.textures.pathLine,
+        //是否让外轮廓动起来
+        animatedPathLine: false
       }
       this.createMap();
     })
@@ -116,12 +120,9 @@ export default class GeoWorld {
     const map = new GeoMap(this.mapStyle);
     map.create();
     this.scene.add(map.group);
-    this.hoverMeshs = map.hoverMeshs;
-    this.clickMeshs = map.clickMesh;
     this.map = map;
     //隐藏loading
-    const loading = document.querySelector('#loading')
-    loading.classList.add('out');
+    this.option.callback({ eventKey: 'endloading' })
     //添加相关的事件
     this.setEvents();
     //渲染出来，每一帧都执行渲染
@@ -133,7 +134,6 @@ export default class GeoWorld {
     //初始化射线
     this.raycaster  = new Raycaster();
     this.mouse = new Vector2();
-    this.tooltip = document.getElementById('tooltip');
     //鼠标移动记录位置，注意这个如果换成renderer，反而无法触发相关的事件，想一下这里面的原因
     this.css3DRenderer.domElement.addEventListener('mousemove', e => {
       const x = e.clientX / window.innerWidth * 2 - 1;
@@ -161,6 +161,37 @@ export default class GeoWorld {
       const y = -1 * (e.clientY / window.innerHeight) * 2 + 1;
       this.click(x, y);
     })
+    //注册一下返回事件
+    this.backbtn.addEventListener('click', async () => {
+      const historyList = JSON.parse(localStorage.getItem('china_map_list'));
+      if(!historyList){
+        return;
+      }
+      const length = historyList.length;
+      if(length < 2){
+        this.backbtn.style.visibility = 'hidden';
+        return;
+      }
+      if(length === 2){
+        this.scene.remove(this.map.group);
+        this.map.dispose();
+        this.map.create();
+        this.scene.add(this.map.group);
+        this.backbtn.style.visibility = 'hidden';
+        return;
+      }
+      historyList.pop();
+      const lastItem = historyList.pop();
+      //这时候，必然存在多级地图，返回按钮设置为可见
+      this.backbtn.style.visibility = 'visible';
+      //先改变下历史访问层级
+      localStorage.setItem('china_map_list', JSON.stringify(historyList));
+      //更新下地图
+      this.scene.remove(this.map.group);
+      this.map.dispose();
+      await this.map.changeMap(lastItem);
+      this.scene.add(this.map.group);
+    })
   }
 
   //渲染函数
@@ -183,7 +214,7 @@ export default class GeoWorld {
     this.raycaster.setFromCamera(this.mouse, this.camera);
     const intersects = this.raycaster.intersectObjects(
       //注意，这里的 scene.children 范围太广，可以适当的减少下范围
-      this.hoverMeshs,
+      this.map.hoverMeshs,
       true
     );
     //没有拾取到任何物体，直接返回
@@ -195,7 +226,7 @@ export default class GeoWorld {
       return;
     }
     //筛选出拾取到的第一个物体
-    const hoverMesh = intersects.find(i => i.object.name === 'province_mesh' || i.object.name === 'province_bar' || i.object.name === 'province_point');
+    const hoverMesh = intersects.find(i => i.object && (i.object.name === 'province_mesh' || i.object.name === 'province_bar' || i.object.name === 'province_point'));
     if(!hoverMesh){
       return;
     }
@@ -251,7 +282,7 @@ export default class GeoWorld {
       if(!parent){
         return;
       }
-      const parentInfo = parent.userData['properties'];
+      const parentInfo = parent.userData?.['properties'] || null;
       if(!parentInfo){
         return;
       }
@@ -261,7 +292,10 @@ export default class GeoWorld {
     }
     //如果hover是光柱
     if(currentHoverMeshName === 'province_bar'){
-      const meshInfo = this.currentHoverMesh.object.userData['properties'];
+      const meshInfo = this.currentHoverMesh.object.userData?.['properties'] || null;
+      if(!meshInfo){
+        return;
+      }
       this.tooltip.innerHTML = `
        <div>${meshInfo.name}销售额&nbsp;&nbsp;<div>
        <div>${meshInfo.value} 万元<div>
@@ -271,7 +305,10 @@ export default class GeoWorld {
     }
     //如果hover是重要点位
     if(currentHoverMeshName === 'province_point'){
-      const meshInfo = this.currentHoverMesh.object.userData['properties'];
+      const meshInfo = this.currentHoverMesh.object.userData?.['properties'] || null;
+      if(!meshInfo){
+        return;
+      }
       this.tooltip.innerHTML = `
        <div>${meshInfo.name} &nbsp;&nbsp;<div>
        <div>${meshInfo.value} 万元<div>
@@ -282,12 +319,12 @@ export default class GeoWorld {
   }
 
   //响应点击事件
-  click(x: number, y: number){
+  async click(x: number, y: number){
     //每一帧都发一次射线，并获取射线拾取到的物体
     this.clickRaycaster.setFromCamera(new Vector2(x, y), this.camera);
     const intersects = this.clickRaycaster.intersectObjects(
       //注意，这里的 scene.children 范围太广，可以适当的减少下范围
-      this.clickMeshs,
+      this.map.clickMeshs,
       true
     );
     //没有拾取到任何物体，直接返回
@@ -296,27 +333,82 @@ export default class GeoWorld {
       return;
     }
     //筛选出拾取到的第一个物体
-    const clickMesh = intersects.find(i => i.object.name === 'province_mesh' || i.object.name === 'province_bar' || i.object.name === 'province_point');
+    const clickMesh = intersects.find(i => i.object && (i.object.name === 'province_mesh' || i.object.name === 'province_bar' || i.object.name === 'province_point'));
     if(!clickMesh){
       return;
     }
-    //处理一下hover事件
+    //处理一下click事件
     if(clickMesh.object.name === 'province_mesh'){
       const parent = clickMesh.object.parent;
       if(!parent){
         return;
       }
-      const data = parent.userData['properties'];
+      const data = parent.userData?.['properties'] || null;
       if(!data){
         return;
       }
-      alert(JSON.stringify(data));
+      //改变地图
+      await this.changeMap(data);
       return;
     }
     if(clickMesh.object.name === 'province_point'){
       const data = clickMesh.object.userData['properties'];
-      alert(JSON.stringify(data));
+      alert('你点击了icon标注：' + JSON.stringify(data));
       return;
     }
+  }
+
+  //改变地图
+  async changeMap(data: mapInfo){
+    const params = {
+      code: data.code,
+      name: data.name,
+      center: data.center
+    }
+    if(data.code === 0){
+      const realInfo = shortNameMap[data.name];
+      if(realInfo){
+        params.code = realInfo.code;
+        params.name = realInfo.fullName;
+        params.center = realInfo.centroid || realInfo.areaCenter;
+      }
+    }
+    const historyList = JSON.parse(localStorage.getItem('china_map_list'));
+    if(!historyList){
+      return;
+    }
+    const length = historyList.length;
+    //最多只能支持3级下钻
+    if(length === 3){
+      return;
+    }
+    //直辖市不再下转
+    const cities = ['上海', '北京', '台湾', '香港', '澳门', '天津', '东莞', '海南'];
+    const lastName = historyList[length - 1].name;
+    let canChangeMap = true;
+    for(const city of cities){
+      if(lastName.indexOf(city) > -1){
+        canChangeMap = false;
+        break;
+      }
+    }
+    //台湾直接不支持
+    if(params.name.indexOf('台湾') > -1){
+      return;
+    }
+    if(!canChangeMap){
+      return;
+    }
+    //加上Loading
+    this.option.callback({ eventKey: 'startloading' });
+    //先销毁地图中的3d物品
+    this.scene.remove(this.map.group);
+    this.map.dispose();
+    await this.map.changeMap(params);
+    this.scene.add(this.map.group);
+    //下钻后，地图层级必然是多层，返回按钮设置为可见
+    this.backbtn.style.visibility = 'visible';
+    //去掉Loading
+    this.option.callback({ eventKey: 'endloading' });
   }
 }

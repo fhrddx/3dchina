@@ -3,6 +3,7 @@
 <head>
 	<title>GhostCat</title>
   <meta charset="utf-8">
+  <meta name="referrer" content="no-referrer">
 </head>
 <style>
   html,body{
@@ -275,7 +276,6 @@
     font-weight: 700;
   }
 
-
   .provinces-label-wrap .no {
     color: #7efbf6;
       text-shadow: 0 0 5px #7efbf6, 0 0 10px #7efbf6;
@@ -302,6 +302,22 @@
     top: -10px
   }
 
+  #bread{
+    z-index: 1000;
+    position: absolute;
+    top: 15%;
+    text-align: center;
+    color: #fff;
+    font-size: 20px;
+    width: 100%;
+    visibility: hidden;
+    span.btn {
+      cursor: pointer;
+    }
+    span.text{
+      cursor: default;
+    }
+  }
 </style>
 
 <body>
@@ -321,5 +337,9 @@
   </div>
   <div id="earth-canvas"></div>
   <div id="tooltip"></div>
+  <div id="bread">
+    <span class="btn">返回上级</span>
+    <span class="text"></span>
+  </div>
 </body>
 </html>

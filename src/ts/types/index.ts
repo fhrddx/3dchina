@@ -87,7 +87,26 @@ type mapOptions = {
   pointTexture: Texture,
   rotationBorder1: Texture,
   rotationBorder2: Texture,
+  pathLine: Texture,
+  animatedPathLine: boolean
+}
+
+type mapInfo = {
+  code: number,
+  name: string,
+  center: number[]
+}
+
+type mapSizeConfig = {
+  jindu: number,
+  weidu: number,
+  scale: number
+}
+
+type callbackEvent = {
+  eventKey: string,
+  eventValue: any
 }
 
 export default punctuation;
-export { earthOptions,  uniforms, mapOptions, saleItem, pointItem };
+export { earthOptions,  uniforms, mapOptions, saleItem, pointItem, mapInfo, mapSizeConfig, callbackEvent };
